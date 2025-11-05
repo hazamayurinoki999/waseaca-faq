@@ -1,108 +1,71 @@
-# Smart FAQ Center — Split Files (HTML + CSS + JS, animated landing)
-
-Below are **three files**. Create this folder structure:
-```
-/faq-site
-  ├─ index.html
-  └─ assets/
-      ├─ app.css
-      └─ app.js
-```
----
-
-## index.html
-```html
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Smart FAQ Center</title>
-  <link rel="preload" href="assets/app.css?v=2025.11.06" as="style">
-  <link rel="stylesheet" href="assets/app.css?v=2025.11.06">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Smart FAQ Center</title>
+<link rel="preload" href="assets/app.css?v=2025.11.06" as="style">
+<link rel="stylesheet" href="assets/app.css?v=2025.11.06">
 </head>
 <body>
-  <header class="header">
-    <div class="container bar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <div class="title">Smart FAQ Center</div>
-          <div class="subtle tiny">Googleスプレッドシートと自動連携</div>
-        </div>
-      </div>
-      <div class="foot-actions">
-        <button class="btn ghost" id="openLanding">メニュー</button>
-        <button class="btn ghost" id="reload">再読込</button>
-      </div>
-    </div>
-  </header>
+<header class="header">
+<div class="container bar">
+<div class="brand">
+<div class="logo" aria-hidden="true"></div>
+<div>
+<div class="title">Smart FAQ Center</div>
+<div class="subtle tiny">Googleスプレッドシートと自動連携</div>
+</div>
+</div>
+<div class="foot-actions">
+<button class="btn ghost" id="openLanding">メニュー</button>
+<button class="btn ghost" id="reload">再読込</button>
+</div>
+</div>
+</header>
 
-  <main class="container">
-    <div class="tools fadeIn">
-      <div class="search" role="search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
-        <input id="searchInput" placeholder="キーワードで検索（例：アカウント、支払い、ログイン）"/>
-      </div>
-      <div class="pill" id="pillAll" aria-pressed="true">すべて</div>
-      <div id="categoryPills" class="pill-wrap"></div>
-    </div>
 
-    <div id="faq-container"><p class="subtle">読み込み中…</p></div>
-  </main>
+<main class="container">
+<div class="tools fadeIn">
+<div class="search" role="search">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+<input id="searchInput" placeholder="キーワードで検索（例：アカウント、支払い、ログイン）"/>
+</div>
+<div class="pill" id="pillAll" aria-pressed="true">すべて</div>
+<div id="categoryPills" class="pill-wrap"></div>
+</div>
 
-  <!-- Landing -->
-  <div class="landing" id="landing" hidden>
-    <div class="panel">
-      <h1>いらっしゃいませ。何から始めますか？</h1>
-      <p class="lead">目的に合わせて入口を選択。選択後はアニメーションでFAQへ遷移します。</p>
-      <div class="choices" id="choices">
-        <button class="choice" data-action="showAll" type="button"><div class="ico"></div><div><h3>すべてを見る</h3><p>公開中のFAQをすべて一覧表示</p></div></button>
-        <button class="choice" data-action="byCategory" type="button"><div class="ico"></div><div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div></button>
-        <button class="choice" data-action="bySearch" type="button"><div class="ico"></div><div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div></button>
-      </div>
-      <div class="actions">
-        <button class="btn primary" id="startBtn" type="button">はじめる</button>
-        <button class="btn" id="skipBtn" type="button">スキップ</button>
-      </div>
-    </div>
-  </div>
 
-  <script>
-    window.FAQ_CONFIG = {
-      SHEET_ID: "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc",
-      SHEET_NAME: "FAQ",
-      // 初回にランディングを表示するか（URLで ?landing=0 なら抑制）
-      showLandingByDefault: true
-    };
-  </script>
-  <script src="assets/app.js?v=2025.11.06" defer></script>
+<div id="faq-container"><p class="subtle">読み込み中…</p></div>
+</main>
+
+
+<!-- Landing -->
+<div class="landing" id="landing" hidden>
+<div class="panel">
+<h1>いらっしゃいませ。何から始めますか？</h1>
+<p class="lead">目的に合わせて入口を選択。選択後はアニメーションでFAQへ遷移します。</p>
+<div class="choices" id="choices">
+<button class="choice" data-action="showAll" type="button"><div class="ico"></div><div><h3>すべてを見る</h3><p>公開中のFAQをすべて一覧表示</p></div></button>
+<button class="choice" data-action="byCategory" type="button"><div class="ico"></div><div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div></button>
+<button class="choice" data-action="bySearch" type="button"><div class="ico"></div><div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div></button>
+</div>
+<div class="actions">
+<button class="btn primary" id="startBtn" type="button">はじめる</button>
+<button class="btn" id="skipBtn" type="button">スキップ</button>
+</div>
+</div>
+</div>
+
+
+<script>
+window.FAQ_CONFIG = {
+SHEET_ID: "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc",
+SHEET_NAME: "FAQ",
+// 初回にランディングを表示するか（URLで ?landing=0 なら抑制）
+showLandingByDefault: true
+};
+</script>
+<script src="assets/app.js?v=2025.11.06" defer></script>
 </body>
 </html>
-```
-
----
-
-## assets/app.css
-```css
-:root{
-  --bg:#0b1220; --surface:#121a2b; --muted:#b3c0d9; --text:#e8efff;
-  --brand1:#6aa5ff; --brand2:#7bffc7; --accent:#ffd166; --card:#0f1524;
-  --border:#1f2a44; --ok:#2ecc71; --danger:#ff6b6b; --shadow:0 10px 25px rgba(14,22,48,.5);
-}
-@media (prefers-color-scheme: light){
-  :root{ --bg:#f6f8fc; --surface:#fff; --text:#06122e; --muted:#4b5975; --brand1:#2b6ef3; --brand2:#00c39a; --card:#fff; --border:#e6e9f3; --shadow:0 10px 25px rgba(9,24,61,.08); }
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Arial; color:var(--text); background:
-  radial-gradient(1000px 600px at 10% -10%, rgba(107,169,255,.15), transparent 60%),
-  radial-gradient(1000px 600px at 110% 10%, rgba(123,255,199,.12), transparent 60%), var(--bg);
-}
-.header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(8px);background:linear-gradient(180deg, rgba(17,24,39,.75), rgba(17,24,39,.45));border-bottom:1px solid var(--border)}
-.container{max-width:1100px;margin:0 auto;padding:16px 20px}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand1),var(--brand2));box-shadow:var(--shadow)}
-.title{font-weight:700;letter-spacing:.2px}
-
-.tools{display:flex;gap:10px;align-items:center;ma
