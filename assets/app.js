@@ -73,7 +73,24 @@
           if(opened){ a.classList.add('open'); a.style.maxHeight = a.scrollHeight + 24 + 'px'; }
           else{ a.style.maxHeight='0px'; a.addEventListener('transitionend',()=>a.classList.remove('open'),{once:true}); }
         });
-        card.appendChild(q); card.appendChild(a); group.appendChild(card);
+        card.appendChild(q); card.appendChild(a); // （既存の render() 内、card.appendChild(q); card.appendChild(a); の直後あたりに追加）
+const fb = document.createElement('div');
+fb.className = 'helpful';
+fb.innerHTML = `
+  <button type="button" class="btn tiny ok">役に立った</button>
+  <button type="button" class="btn tiny ghost">いいえ</button>
+`;
+a.appendChild(fb);
+
+const makeId = (s) => String(s||'').toLowerCase().slice(0,80); // 簡易ID（あとで差し替え可）
+fb.querySelector('.ok').addEventListener('click', ()=> {
+  console.log('[helpful=YES]', { id: makeId(it.question), q: it.question });
+  // TODO: 後でGAS/SheetsへPOST
+});
+fb.querySelector('.ghost').addEventListener('click', ()=> {
+  console.log('[helpful=NO]', { id: makeId(it.question), q: it.question });
+  // TODO: 「未解決ログ」へ書き込み or 問い合わせ誘導
+});group.appendChild(card);
       });
       frag.appendChild(group);
     });
