@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>早稲アカFAQ</title>
+  <style>
+    body { font-family: "Noto Sans JP", sans-serif; margin: 2em; background: #fafafa; }
+    h1 { color: #1a237e; text-align: center; }
+    .category { margin-top: 2em; }
+    .question { cursor: pointer; background: #e8eaf6; margin: 0.3em 0; padding: 0.5em; border-radius: 6px; }
+    .answer { display: none; margin-left: 1em; padding: 0.5em; background: #fff; border-left: 4px solid #3f51b5; border-radius: 4px; }
+    footer { margin-top: 2em; text-align: center; color: #666; font-size: 0.8em; }
+  </style>
+</head>
+<body>
+  <h1>早稲アカFAQ一覧</h1>
+  <div id="faq-container">読み込み中...</div>
+  <footer>© 早稲田アカデミーシンガポール校</footer>
+
+  <script>
+    // ★ あなたのスプレッドシートIDをここに貼り付けてください ★
+    const SHEET_ID = "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc";  
+    const SHEET_NAME = "FAQ";
+    const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    async function loadFAQ() {
+      try {
+        const res = await fetch(API_URL);
+        const text = await res.text();
+        const json = JSON.parse(text.substring(47, text.length - 2)); // GoogleシートJSONを整形
+        const rows = json.table.rows.map(r => r.c.map(c => c ? c.v : ""));
+        
+        const header = rows.shift();
+        const idx = {
+          category: header.indexOf("カテゴリ"),
+          question: header.indexOf("質問"),
+          answer: header.indexOf("回答"),
+          publicFlag: header.indexOf("公開フラグ")
+        };
+
+        const faqData = rows.filter(r => r[idx.publicFlag] === "TRUE");
+        const container = document.getElementById("faq-container");
+        container.innerHTML = "";
+
+        const grouped = {};
+        faqData.forEach(row => {
+          const cat = row[idx.category] || "その他";
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(row);
+        });
+
+        for (const [cat, items] of Object.entries(grouped)) {
+          const catDiv = document.createElement("div");
+          catDiv.className = "category";
+          catDiv.innerHTML = `<h2>${cat}</h2>`;
+
+          items.forEach(item => {
+            const q = document.createElement("div");
+            q.className = "question";
+            q.textContent = item[idx.question];
+            const a = document.createElement("div");
+            a.className = "answer";
+            a.textContent = item[idx.answer];
+            q.addEventListener("click", () => {
+              a.style.display = (a.style.display === "block") ? "none" : "block";
+            });
+            catDiv.appendChild(q);
+            catDiv.appendChild(a);
+          });
+          container.appendChild(catDiv);
+        }
+      } catch (e) {
+        document.getElementById("faq-container").textContent = "データの読み込みに失敗しました。";
+        console.error(e);
+      }
+    }
+
+    loadFAQ();
+  </script>
+</body>
+</html>
