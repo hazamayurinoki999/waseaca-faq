@@ -1,77 +1,144 @@
-<script>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FAQ</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", Arial, sans-serif; line-height: 1.6; margin: 24px; }
+    .category { margin: 24px 0; }
+    .category > h2 { margin: 0 0 8px; font-size: 1.2rem; }
+    .question { cursor: pointer; padding: 10px 12px; background: #f5f7fa; border: 1px solid #e3e8ef; border-radius: 8px; margin: 8px 0 0; }
+    .answer   { display: none; padding: 12px; border-left: 3px solid #90caf9; background: #fafcff; }
+    .alert    { color:#c62828; background:#ffebee; padding:12px; border-radius:8px; }
+    .muted    { color:#607d8b; }
+  </style>
+</head>
+<body>
+  <!-- 描画先（無ければJS側で自動生成するが、置いておくのが安全） -->
+  <div id="faq-container">
+    <p class="muted">読み込み中…</p>
+  </div>
+
+  <script>
+  // ====== 設定 ======
   // ← /d/ と /edit の間のIDを "" で
-  const SHEET_ID = "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc";
+  const SHEET_ID   = "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc";
   const SHEET_NAME = "FAQ";
   // headers=1 を付けるとシート1行目を見出しとして扱う
   const API_URL =
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-  const $ = s => document.querySelector(s);
-  const isPublic = v => (v === true) || (String(v).toUpperCase() === "TRUE");
+  // ====== 小道具 ======
+  const $ = (s) => document.querySelector(s);
+  const isPublic = (v) => (v === true) || (String(v).trim().toUpperCase() === "TRUE");
+  const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
+  // 見出しマップを作成（余分列OK・順不同OK）
+  function buildHeaderMap(headerRow) {
+    const map = {};
+    headerRow.forEach((name, i) => {
+      const key = String(name ?? "").trim();
+      if (key) map[key] = i;
+    });
+    return map;
+  }
+
+  // 必須列が揃っているかチェック（表記は完全一致）
+  const REQUIRED_HEADERS = ["カテゴリ", "質問", "回答", "公開フラグ"]; // 追加列は無視
+  function validateHeaders(map) {
+    const missing = REQUIRED_HEADERS.filter(k => !(k in map));
+    if (missing.length) {
+      throw new Error(`見出しの必須列が不足しています: ${missing.join("、")}（表記ゆれ/全角半角スペースに注意）`);
+    }
+  }
+
+  function ensureContainer() {
+    let el = $("#faq-container");
+    if (!el) {
+      console.warn("描画先 #faq-container が見つからないため自動生成します。");
+      el = document.createElement("div");
+      el.id = "faq-container";
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function showAlert(message) {
+    const container = ensureContainer();
+    container.innerHTML = `<div class="alert">${escapeHtml(message)}</div>`;
+  }
+
+  // ====== メイン処理 ======
   async function loadFAQ() {
     try {
       const res = await fetch(API_URL, { cache: "no-store" });
       const text = await res.text();
 
+      // gviz 形式でなければ公開設定やURLをチェック
       if (!text.startsWith("/*O_o*/")) {
-        throw new Error("シートの共有が“リンクを知っている全員：閲覧可”になっているか、SHEET_ID/タブ名をご確認ください。");
+        throw new Error("シートの公開設定が『リンクを知っている全員：閲覧可』になっているか、SHEET_ID/タブ名（シート名）をご確認ください。");
       }
 
-      const json = JSON.parse(text.substring(47, text.length - 2));
+      // gviz の前後を削って JSON パース
+      let json;
+      try {
+        json = JSON.parse(text.substring(47, text.length - 2));
+      } catch (e) {
+        console.error("gvizペイロード先頭:", text.slice(0, 120));
+        throw new Error("Google Sheets API応答の解析に失敗しました。ネットワーク/権限をご確認ください。");
+      }
 
       // 1) 見出しは cols.label を優先
       let header = (json.table.cols || []).map(c => (c && c.label) ? String(c.label).trim() : "");
       // 2) データ行
-      let rows = (json.table.rows || []).map(r => r.c.map(c => (c ? c.v : "")));
+      let rows = (json.table.rows || []).map(r => (r.c || []).map(c => (c ? c.v : "")));
 
       // もし label が空（A,B,C…）しか無い場合は、最初の行を見出しとして利用
       const labelsLookInvalid = header.every(h => !h || /^[A-Z]$/.test(h));
       if (labelsLookInvalid && rows.length) {
-        header = rows.shift().map(v => String(v).trim());
+        header = rows.shift().map(v => String(v ?? "").trim());
       }
 
-      // インデックス取得（日本語見出しに完全一致）
-      const idx = {
-        category: header.indexOf("カテゴリ"),
-        question: header.indexOf("質問"),
-        answer: header.indexOf("回答"),
-        publicFlag: header.indexOf("公開フラグ"),
-      };
-      if (Object.values(idx).some(v => v === -1)) {
-        throw new Error("見出しが一致しません。『カテゴリ / 質問 / 回答 / 公開フラグ』の表記ゆれや空白を確認してください。");
-      }
+      const headerMap = buildHeaderMap(header);
+      validateHeaders(headerMap);
 
-      const data = rows.filter(r => isPublic(r[idx.publicFlag]));
-      const container = $("#faq-container");
+      // 行→オブジェクト化（必須列のみ使用、追加列は無視／必要なら後で拡張）
+      const items = rows.map(r => ({
+        category: r[headerMap["カテゴリ"]] ?? "",
+        question: r[headerMap["質問"]] ?? "",
+        answer:   r[headerMap["回答"]] ?? "",
+        public:   r[headerMap["公開フラグ"]],
+      })).filter(it => isPublic(it.public));
+
+      const container = ensureContainer();
       container.innerHTML = "";
 
-      if (!data.length) {
-        container.innerHTML = `<div style="color:#c62828;background:#ffebee;padding:12px;border-radius:8px;">
-          表示対象のFAQが0件です（公開フラグTRUEをご確認ください）。
-        </div>`;
+      if (!items.length) {
+        container.innerHTML = `<div class="alert">表示対象のFAQが0件です（公開フラグ TRUE をご確認ください）。</div>`;
         return;
       }
 
       // カテゴリごとにまとめて描画
       const grouped = {};
-      data.forEach(r => {
-        const cat = (r[idx.category] || "その他").toString();
-        (grouped[cat] ||= []).push(r);
-      });
+      for (const it of items) {
+        const cat = String(it.category || "その他");
+        (grouped[cat] ||= []).push(it);
+      }
 
-      for (const [cat, items] of Object.entries(grouped)) {
+      for (const [cat, list] of Object.entries(grouped)) {
         const wrap = document.createElement("div");
         wrap.className = "category";
-        wrap.innerHTML = `<h2>${cat}</h2>`;
-        items.forEach(item => {
+        wrap.innerHTML = `<h2>${escapeHtml(cat)}</h2>`;
+
+        for (const it of list) {
           const q = document.createElement("div");
           q.className = "question";
-          q.textContent = item[idx.question];
+          q.textContent = it.question ?? "";
 
           const a = document.createElement("div");
           a.className = "answer";
-          a.textContent = item[idx.answer];
+          a.innerHTML = escapeHtml(it.answer ?? "");
 
           q.addEventListener("click", () => {
             a.style.display = (a.style.display === "block") ? "none" : "block";
@@ -79,14 +146,21 @@
 
           wrap.appendChild(q);
           wrap.appendChild(a);
-        });
+        }
         container.appendChild(wrap);
       }
     } catch (err) {
-      $("#faq-container").innerHTML =
-        `<div style="color:#c62828;background:#ffebee;padding:12px;border-radius:8px;">${err.message}</div>`;
       console.error(err);
+      showAlert(err.message || String(err));
     }
   }
-  loadFAQ();
-</script>
+
+  // DOM 準備後に起動
+  document.addEventListener("DOMContentLoaded", () => {
+    // 例外で真っ白にならないように try/catch
+    try { loadFAQ(); }
+    catch (e) { showAlert(e.message || String(e)); }
+  });
+  </script>
+</body>
+</html>
