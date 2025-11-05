@@ -1,104 +1,29 @@
+# Smart FAQ Center — Split Files (HTML + CSS + JS, animated landing)
+
+Below are **three files**. Create this folder structure:
+```
+/faq-site
+  ├─ index.html
+  └─ assets/
+      ├─ app.css
+      └─ app.js
+```
+---
+
+## index.html
+```html
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FAQ | Smart Help Center</title>
-  <style>
-    :root{
-      --bg: #0b1220;
-      --surface: #121a2b;
-      --muted: #b3c0d9;
-      --text: #e8efff;
-      --brand1: #6aa5ff;
-      --brand2: #7bffc7;
-      --accent: #ffd166;
-      --card: #0f1524;
-      --border: #1f2a44;
-      --ok: #2ecc71;
-      --danger: #ff6b6b;
-      --shadow: 0 10px 25px rgba(14, 22, 48, .5);
-    }
-    @media (prefers-color-scheme: light) {
-      :root{
-        --bg: #f6f8fc; --surface:#ffffff; --text:#06122e; --muted:#4b5975;
-        --brand1:#2b6ef3; --brand2:#00c39a; --card:#ffffff; --border:#e6e9f3; --shadow: 0 10px 25px rgba(9,24,61,.08);
-      }
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Arial; color:var(--text); background:
-      radial-gradient(1000px 600px at 10% -10%, rgba(107,169,255,.15), transparent 60%),
-      radial-gradient(1000px 600px at 110% 10%, rgba(123,255,199,.12), transparent 60%),
-      var(--bg);
-    }
-
-    /* Header */
-    .header{
-      position: sticky; top:0; z-index:50; backdrop-filter:saturate(140%) blur(8px);
-      background: linear-gradient(180deg, rgba(17,24,39,.75), rgba(17,24,39,.45));
-      border-bottom:1px solid var(--border);
-    }
-    .container{max-width:1100px;margin:0 auto;padding:16px 20px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand1),var(--brand2));box-shadow:var(--shadow)}
-    .title{font-weight:700;letter-spacing:.2px}
-
-    /* Landing */
-    .landing{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:
-      radial-gradient(80vmax 60vmax at 20% 10%, rgba(106,165,255,.20), transparent 60%),
-      radial-gradient(100vmax 70vmax at 80% 20%, rgba(123,255,199,.18), transparent 60%),
-      var(--bg);
-    }
-    .panel{width:min(840px, 92vw); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid var(--border); border-radius:20px; box-shadow: var(--shadow);
-      padding:28px; }
-    .panel h1{margin:0 0 6px;font-size:clamp(20px, 3.2vw, 28px)}
-    .panel p{margin:0 0 22px;color:var(--muted)}
-    .choices{display:grid;grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:14px}
-    .choice{border:1px solid var(--border); background:var(--card); border-radius:16px; padding:16px; display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:.2s transform, .2s box-shadow, .2s border-color}
-    .choice:hover{transform:translateY(-3px); box-shadow: var(--shadow); border-color: rgba(123,255,199,.6)}
-    .ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand1),var(--brand2));flex:0 0 auto}
-    .choice h3{margin:0 0 6px;font-size:16px}
-    .choice p{margin:0;color:var(--muted);font-size:13px}
-    .landing .actions{margin-top:18px; display:flex; gap:10px; flex-wrap:wrap}
-    .btn{appearance:none;border:1px solid var(--border); background:var(--surface); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600}
-    .btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2)); color:#081422; border:none}
-    .btn.ghost{background:transparent}
-
-    .fadeOutUp{animation:fadeOutUp .5s forwards ease}
-    .fadeIn{animation:fadeIn .5s forwards ease}
-    @keyframes fadeOutUp{to{opacity:0; transform: translateY(-10px); visibility:hidden}}
-    @keyframes fadeIn{from{opacity:0; transform: translateY(10px)} to{opacity:1; transform:none}}
-
-    /* Tools row */
-    .tools{display:flex; gap:10px; align-items:center; margin:14px 0 6px; flex-wrap:wrap}
-    .search{flex:1; display:flex; align-items:center; gap:8px; border:1px solid var(--border); background:var(--surface); border-radius:12px; padding:8px 10px}
-    .search input{flex:1; border:none; outline:none; font-size:15px; background:transparent; color:var(--text)}
-    .pill{border:1px solid var(--border); padding:7px 10px; border-radius:999px; cursor:pointer; background:var(--surface); font-size:13px}
-    .pill.active{border-color:var(--brand1); box-shadow: 0 0 0 2px rgba(106,165,255,.25) inset}
-
-    /* List */
-    .group{margin:20px 0}
-    .group h2{margin:0 0 10px; font-size:18px}
-    .card{border:1px solid var(--border); background:var(--card); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); margin:10px 0}
-    .q{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; cursor:pointer}
-    .q:hover{background:linear-gradient(180deg, rgba(255,255,255,.04), transparent)}
-    .q h3{margin:0; font-size:16px; font-weight:650}
-    .chev{width:14px; height:14px; transition: .25s transform; opacity:.8}
-    .a{max-height:0; overflow:hidden; transition: max-height .3s ease, padding .25s ease; padding:0 16px; border-top:1px solid transparent}
-    .a.open{padding:12px 16px 16px; border-top:1px solid var(--border)}
-    .a p{margin:0}
-
-    .alert{color:#1f283a;background:#ddf4ff; border:1px solid #b5e2ff; padding:12px; border-radius:12px}
-    @media (prefers-color-scheme: dark){.alert{color:#cde8ff;background:rgba(35,115,223,.15); border-color:#1e3a8a}}
-
-    .subtle{color:var(--muted); font-size:13px}
-    .foot-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .tiny{font-size:12px}
-  </style>
+  <title>Smart FAQ Center</title>
+  <link rel="preload" href="assets/app.css?v=2025.11.06" as="style">
+  <link rel="stylesheet" href="assets/app.css?v=2025.11.06">
 </head>
 <body>
-  <div class="header">
-    <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <header class="header">
+    <div class="container bar">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
         <div>
@@ -111,175 +36,73 @@
         <button class="btn ghost" id="reload">再読込</button>
       </div>
     </div>
-  </div>
+  </header>
 
-  <div class="container">
+  <main class="container">
     <div class="tools fadeIn">
       <div class="search" role="search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
         <input id="searchInput" placeholder="キーワードで検索（例：アカウント、支払い、ログイン）"/>
       </div>
       <div class="pill" id="pillAll" aria-pressed="true">すべて</div>
-      <div id="categoryPills" style="display:flex; gap:8px; flex-wrap:wrap"></div>
+      <div id="categoryPills" class="pill-wrap"></div>
     </div>
 
     <div id="faq-container"><p class="subtle">読み込み中…</p></div>
-  </div>
+  </main>
 
   <!-- Landing -->
-  <div class="landing" id="landing">
+  <div class="landing" id="landing" hidden>
     <div class="panel">
       <h1>いらっしゃいませ。何から始めますか？</h1>
-      <p>目的に合わせて入口を選べます。選択後はスムーズなアニメーションでFAQへ遷移します。</p>
+      <p class="lead">目的に合わせて入口を選択。選択後はアニメーションでFAQへ遷移します。</p>
       <div class="choices" id="choices">
-        <div class="choice" data-action="showAll"><div class="ico"></div><div><h3>すべてを見る</h3><p>公開中のFAQをすべて一覧表示</p></div></div>
-        <div class="choice" data-action="byCategory"><div class="ico"></div><div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div></div>
-        <div class="choice" data-action="bySearch"><div class="ico"></div><div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div></div>
+        <button class="choice" data-action="showAll" type="button"><div class="ico"></div><div><h3>すべてを見る</h3><p>公開中のFAQをすべて一覧表示</p></div></button>
+        <button class="choice" data-action="byCategory" type="button"><div class="ico"></div><div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div></button>
+        <button class="choice" data-action="bySearch" type="button"><div class="ico"></div><div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div></button>
       </div>
       <div class="actions">
-        <button class="btn primary" id="startBtn">はじめる</button>
-        <button class="btn" id="skipBtn">スキップ</button>
+        <button class="btn primary" id="startBtn" type="button">はじめる</button>
+        <button class="btn" id="skipBtn" type="button">スキップ</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ====== 設定 ======
-    const SHEET_ID   = "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc"; // ← ユーザーのID
-    const SHEET_NAME = "FAQ";
-    const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
-
-    // ====== state ======
-    let ALL_ITEMS = [];     // {category, question, answer, public}
-    let CURRENT_FILTER = { category: null, q: "" };
-
-    // ====== utils ======
-    const $ = (s) => document.querySelector(s);
-    const isPublic = (v) => (v === true) || (String(v).trim().toUpperCase() === "TRUE");
-    const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
-    function buildHeaderMap(headerRow) {
-      const map = {}; headerRow.forEach((name,i)=>{ const key = String(name ?? '').trim(); if(key) map[key]=i; }); return map;
-    }
-    const REQUIRED_HEADERS = ["カテゴリ","質問","回答","公開フラグ"];
-    function validateHeaders(map) {
-      const miss = REQUIRED_HEADERS.filter(k=>!(k in map));
-      if(miss.length) throw new Error(`見出しの必須列が不足しています: ${miss.join("、")}`);
-    }
-
-    function ensureContainer(){ let el = $("#faq-container"); if(!el){ el=document.createElement('div'); el.id='faq-container'; document.body.appendChild(el);} return el; }
-    function showAlert(msg){ ensureContainer().innerHTML = `<div class="alert">${escapeHtml(msg)}</div>`; }
-
-    function makeChevron(){ const el = document.createElement('span'); el.className='chev'; el.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`; return el; }
-
-    function buildPills(categories){
-      const wrap = $("#categoryPills"); wrap.innerHTML = "";
-      categories.forEach(cat=>{
-        const d = document.createElement('div'); d.className='pill'; d.textContent = cat; d.dataset.cat = cat;
-        d.addEventListener('click',()=>{ CURRENT_FILTER.category = (CURRENT_FILTER.category===cat? null : cat); syncPills(); render(); });
-        wrap.appendChild(d);
-      });
-      $("#pillAll").onclick = ()=>{ CURRENT_FILTER.category=null; syncPills(); render(); };
-      syncPills();
-    }
-    function syncPills(){
-      const pills = [...document.querySelectorAll('.pill')];
-      pills.forEach(p=>p.classList.remove('active'));
-      if(!CURRENT_FILTER.category) $("#pillAll").classList.add('active');
-      [...document.querySelectorAll('#categoryPills .pill')].forEach(p=>{
-        if(p.dataset.cat===CURRENT_FILTER.category) p.classList.add('active');
-      });
-    }
-
-    function filterItems(){
-      const q = CURRENT_FILTER.q.trim().toLowerCase();
-      return ALL_ITEMS.filter(it=>{
-        if(CURRENT_FILTER.category && String(it.category)!==CURRENT_FILTER.category) return false;
-        if(!q) return true;
-        const hay = `${it.category}\n${it.question}\n${it.answer}`.toLowerCase();
-        return hay.includes(q);
-      });
-    }
-
-    function groupByCategory(items){
-      const g = {}; for(const it of items){ const c = String(it.category||'その他'); (g[c] ||= []).push(it); } return g;
-    }
-
-    function render(){
-      const container = ensureContainer();
-      const items = filterItems();
-      if(!items.length){ container.innerHTML = `<div class="alert">条件に一致するFAQがありません。</div>`; return; }
-      const grouped = groupByCategory(items);
-      const frag = document.createDocumentFragment();
-      Object.entries(grouped).forEach(([cat,list])=>{
-        const group = document.createElement('section'); group.className='group fadeIn';
-        group.innerHTML = `<h2>${escapeHtml(cat)}</h2>`;
-        list.forEach(it=>{
-          const card = document.createElement('article'); card.className='card';
-          const q = document.createElement('div'); q.className='q';
-          const h3 = document.createElement('h3'); h3.textContent = it.question ?? '';
-          const chev = makeChevron(); q.appendChild(h3); q.appendChild(chev);
-          const a = document.createElement('div'); a.className='a'; a.innerHTML = `<p>${escapeHtml(it.answer ?? '')}</p>`;
-          let opened=false;
-          q.addEventListener('click',()=>{
-            opened=!opened; chev.style.transform = opened? 'rotate(180deg)':'rotate(0)';
-            if(opened){ a.classList.add('open'); a.style.maxHeight = a.scrollHeight + 24 + 'px'; }
-            else{ a.style.maxHeight = '0px'; a.addEventListener('transitionend',()=>a.classList.remove('open'),{once:true}); }
-          });
-          card.appendChild(q); card.appendChild(a); group.appendChild(card);
-        });
-        frag.appendChild(group);
-      });
-      container.innerHTML = ""; container.appendChild(frag);
-    }
-
-    async function loadFAQ(){
-      const res = await fetch(API_URL, {cache:'no-store'});
-      const text = await res.text();
-      if(!text.startsWith("/*O_o*/")) throw new Error("シート公開設定またはID/タブ名を確認してください。");
-      let json; try{ json = JSON.parse(text.substring(47, text.length-2)); } catch{ throw new Error("シート応答の解析に失敗しました。"); }
-      let header = (json.table.cols||[]).map(c=> (c&&c.label)? String(c.label).trim(): "");
-      let rows = (json.table.rows||[]).map(r=> (r.c||[]).map(c=> (c? c.v: "")));
-      const invalid = header.every(h=> !h || /^[A-Z]$/.test(h));
-      if(invalid && rows.length){ header = rows.shift().map(v=> String(v??"").trim()); }
-      const map = buildHeaderMap(header); validateHeaders(map);
-      ALL_ITEMS = rows.map(r=>({
-        category: r[map["カテゴリ"]] ?? "",
-        question: r[map["質問"]] ?? "",
-        answer:   r[map["回答"]] ?? "",
-        public:   r[map["公開フラグ"]]
-      })).filter(it=> isPublic(it.public));
-
-      // Build category pills
-      const cats = [...new Set(ALL_ITEMS.map(it=> String(it.category||'その他')))].sort((a,b)=> a.localeCompare(b,'ja'));
-      buildPills(cats);
-      render();
-    }
-
-    // ====== landing interactions ======
-    let landingChoice = 'showAll';
-    const landing = $("#landing");
-    $("#choices").addEventListener('click', (e)=>{
-      const target = e.target.closest('.choice'); if(!target) return;
-      landingChoice = target.dataset.action; [...document.querySelectorAll('.choice')].forEach(c=>c.style.outline='none');
-      target.style.outline = '2px solid rgba(123,255,199,.7)';
-    });
-    $("#startBtn").onclick = ()=>{
-      landing.classList.add('fadeOutUp'); setTimeout(()=> landing.style.display='none', 500);
-      if(landingChoice==='bySearch'){ $("#searchInput").focus(); }
-      if(landingChoice==='byCategory'){ CURRENT_FILTER.category = null; syncPills(); window.scrollTo({top:0, behavior:'smooth'}); }
+    window.FAQ_CONFIG = {
+      SHEET_ID: "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc",
+      SHEET_NAME: "FAQ",
+      // 初回にランディングを表示するか（URLで ?landing=0 なら抑制）
+      showLandingByDefault: true
     };
-    $("#skipBtn").onclick = ()=>{ landing.classList.add('fadeOutUp'); setTimeout(()=> landing.style.display='none', 500); };
-    $("#openLanding").onclick = ()=>{ landing.style.display='flex'; landing.classList.remove('fadeOutUp'); };
-
-    // ====== search & refresh ======
-    $("#searchInput").addEventListener('input', (e)=>{ CURRENT_FILTER.q = e.target.value; render(); });
-    $("#reload").onclick = async ()=>{ try{ await loadFAQ(); showAlert('最新のデータに更新しました。'); setTimeout(()=>render(), 600);} catch(e){ showAlert(e.message||String(e)); } };
-
-    // ====== boot ======
-    document.addEventListener('DOMContentLoaded', async ()=>{
-      try{ await loadFAQ(); } catch(e){ showAlert(e.message||String(e)); }
-    });
   </script>
+  <script src="assets/app.js?v=2025.11.06" defer></script>
 </body>
 </html>
+```
+
+---
+
+## assets/app.css
+```css
+:root{
+  --bg:#0b1220; --surface:#121a2b; --muted:#b3c0d9; --text:#e8efff;
+  --brand1:#6aa5ff; --brand2:#7bffc7; --accent:#ffd166; --card:#0f1524;
+  --border:#1f2a44; --ok:#2ecc71; --danger:#ff6b6b; --shadow:0 10px 25px rgba(14,22,48,.5);
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#f6f8fc; --surface:#fff; --text:#06122e; --muted:#4b5975; --brand1:#2b6ef3; --brand2:#00c39a; --card:#fff; --border:#e6e9f3; --shadow:0 10px 25px rgba(9,24,61,.08); }
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",Arial; color:var(--text); background:
+  radial-gradient(1000px 600px at 10% -10%, rgba(107,169,255,.15), transparent 60%),
+  radial-gradient(1000px 600px at 110% 10%, rgba(123,255,199,.12), transparent 60%), var(--bg);
+}
+.header{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(8px);background:linear-gradient(180deg, rgba(17,24,39,.75), rgba(17,24,39,.45));border-bottom:1px solid var(--border)}
+.container{max-width:1100px;margin:0 auto;padding:16px 20px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand1),var(--brand2));box-shadow:var(--shadow)}
+.title{font-weight:700;letter-spacing:.2px}
+
+.tools{display:flex;gap:10px;align-items:center;ma
