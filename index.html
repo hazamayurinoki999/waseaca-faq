@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>早稲アカFAQ</title>
   <style>
-    body { font-family: "Noto Sans JP", sans-serif; margin: 2em; background: #fafafa; }
-    h1 { color: #1a237e; text-align: center; }
-    .category { margin-top: 2em; }
-    .question { cursor: pointer; background: #e8eaf6; margin: 0.3em 0; padding: 0.5em; border-radius: 6px; }
-    .answer { display: none; margin-left: 1em; padding: 0.5em; background: #fff; border-left: 4px solid #3f51b5; border-radius: 4px; }
-    footer { margin-top: 2em; text-align: center; color: #666; font-size: 0.8em; }
+    body { font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif; margin: 24px; background:#fafafa; }
+    h1 { color:#1a237e; text-align:center; margin-bottom: 16px; }
+    .category { margin-top: 24px; }
+    .question { cursor:pointer; background:#e8eaf6; margin:6px 0; padding:10px 12px; border-radius:8px; }
+    .answer { display:none; margin-left:12px; padding:10px 12px; background:#fff; border-left:4px solid #3f51b5; border-radius:6px; }
+    .error { color:#c62828; background:#ffebee; padding:12px; border-radius:8px; }
+    footer { margin-top:24px; color:#666; text-align:center; font-size:12px; }
   </style>
 </head>
 <body>
@@ -19,60 +20,78 @@
   <footer>© 早稲田アカデミーシンガポール校</footer>
 
   <script>
-    // ★ あなたのスプレッドシートIDをここに貼り付けてください ★
-    const SHEET_ID = "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc";  
+    // ★ ここをあなたのIDに置き換え（"" で囲む）
+    const SHEET_ID = "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc";
     const SHEET_NAME = "FAQ";
-    const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+    const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+    const el = (sel) => document.querySelector(sel);
+
+    const isPublic = (v) => (v === true) || (String(v).toUpperCase() === "TRUE");
 
     async function loadFAQ() {
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(API_URL, { cache: "no-store" });
         const text = await res.text();
-        const json = JSON.parse(text.substring(47, text.length - 2)); // GoogleシートJSONを整形
-        const rows = json.table.rows.map(r => r.c.map(c => c ? c.v : ""));
-        
+
+        // gvizレスポンス → JSON抽出
+        if (!text.startsWith("/*O_o*/")) {
+          throw new Error("Googleシートの共有設定が“閲覧可”になっていない可能性があります。");
+        }
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        const rows = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
+
         const header = rows.shift();
         const idx = {
           category: header.indexOf("カテゴリ"),
           question: header.indexOf("質問"),
           answer: header.indexOf("回答"),
-          publicFlag: header.indexOf("公開フラグ")
+          publicFlag: header.indexOf("公開フラグ"),
         };
+        if (Object.values(idx).some(v => v === -1)) {
+          throw new Error("見出し行が一致していません（カテゴリ/質問/回答/公開フラグ）。");
+        }
 
-        const faqData = rows.filter(r => r[idx.publicFlag] === "TRUE");
-        const container = document.getElementById("faq-container");
+        const data = rows.filter(r => isPublic(r[idx.publicFlag]));
+        const container = el("#faq-container");
         container.innerHTML = "";
 
         const grouped = {};
-        faqData.forEach(row => {
-          const cat = row[idx.category] || "その他";
-          if (!grouped[cat]) grouped[cat] = [];
-          grouped[cat].push(row);
+        data.forEach(r => {
+          const cat = r[idx.category] || "その他";
+          (grouped[cat] ||= []).push(r);
         });
 
-        for (const [cat, items] of Object.entries(grouped)) {
-          const catDiv = document.createElement("div");
-          catDiv.className = "category";
-          catDiv.innerHTML = `<h2>${cat}</h2>`;
+        if (!Object.keys(grouped).length) {
+          container.innerHTML = `<div class="error">表示対象のFAQがありません（公開フラグをご確認ください）。</div>`;
+          return;
+        }
 
+        for (const [cat, items] of Object.entries(grouped)) {
+          const wrap = document.createElement("div");
+          wrap.className = "category";
+          wrap.innerHTML = `<h2>${cat}</h2>`;
           items.forEach(item => {
             const q = document.createElement("div");
             q.className = "question";
             q.textContent = item[idx.question];
+
             const a = document.createElement("div");
             a.className = "answer";
             a.textContent = item[idx.answer];
+
             q.addEventListener("click", () => {
               a.style.display = (a.style.display === "block") ? "none" : "block";
             });
-            catDiv.appendChild(q);
-            catDiv.appendChild(a);
+
+            wrap.appendChild(q);
+            wrap.appendChild(a);
           });
-          container.appendChild(catDiv);
+          container.appendChild(wrap);
         }
-      } catch (e) {
-        document.getElementById("faq-container").textContent = "データの読み込みに失敗しました。";
-        console.error(e);
+      } catch (err) {
+        el("#faq-container").innerHTML = `<div class="error">${err.message}</div>`;
+        console.error(err);
       }
     }
 
