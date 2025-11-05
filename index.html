@@ -1,87 +1,62 @@
 <script>
-  // ★あなたのID（/d/ と /edit の間）を "" で入れてください
+  // ← /d/ と /edit の間のIDを "" で
   const SHEET_ID = "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc";
   const SHEET_NAME = "FAQ";
+  // headers=1 を付けるとシート1行目を見出しとして扱う
   const API_URL =
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
-  const $ = (sel) => document.querySelector(sel);
-  const logBox = document.createElement("pre");
-  logBox.style.background = "#fff";
-  logBox.style.padding = "12px";
-  logBox.style.border = "1px solid #ddd";
-  logBox.style.borderRadius = "8px";
-  logBox.style.whiteSpace = "pre-wrap";
-  logBox.style.fontSize = "12px";
-  logBox.style.color = "#333";
-
-  function say(msg) {
-    console.log(msg);
-    logBox.textContent += (typeof msg === "string" ? msg : JSON.stringify(msg, null, 2)) + "\n";
-  }
-
-  const isPublic = (v) => (v === true) || (String(v).toUpperCase() === "TRUE");
+  const $ = s => document.querySelector(s);
+  const isPublic = v => (v === true) || (String(v).toUpperCase() === "TRUE");
 
   async function loadFAQ() {
     try {
-      const container = document.getElementById("faq-container");
-      container.innerHTML = "読み込み中...";
-      container.after(logBox);
-
-      say("API_URL: " + API_URL);
-
       const res = await fetch(API_URL, { cache: "no-store" });
       const text = await res.text();
 
       if (!text.startsWith("/*O_o*/")) {
-        throw new Error("シートの共有設定が“リンクを知っている全員：閲覧可”になっていません（またはSHEET_ID/シート名が違う）。");
+        throw new Error("シートの共有が“リンクを知っている全員：閲覧可”になっているか、SHEET_ID/タブ名をご確認ください。");
       }
 
       const json = JSON.parse(text.substring(47, text.length - 2));
-      const rows = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
-      const header = rows.shift();
 
-      say({ header });
+      // 1) 見出しは cols.label を優先
+      let header = (json.table.cols || []).map(c => (c && c.label) ? String(c.label).trim() : "");
+      // 2) データ行
+      let rows = (json.table.rows || []).map(r => r.c.map(c => (c ? c.v : "")));
 
+      // もし label が空（A,B,C…）しか無い場合は、最初の行を見出しとして利用
+      const labelsLookInvalid = header.every(h => !h || /^[A-Z]$/.test(h));
+      if (labelsLookInvalid && rows.length) {
+        header = rows.shift().map(v => String(v).trim());
+      }
+
+      // インデックス取得（日本語見出しに完全一致）
       const idx = {
         category: header.indexOf("カテゴリ"),
         question: header.indexOf("質問"),
         answer: header.indexOf("回答"),
-        source: header.indexOf("引用URL"),
-        updated: header.indexOf("最終更新日"),
         publicFlag: header.indexOf("公開フラグ"),
       };
-      say({ columnIndex: idx });
-
-      // ヘッダが一致しないときのメッセージ
       if (Object.values(idx).some(v => v === -1)) {
-        throw new Error("見出し行が一致していません（カテゴリ/質問/回答/引用URL/最終更新日/公開フラグ）。表記ゆれ・空白に注意。");
+        throw new Error("見出しが一致しません。『カテゴリ / 質問 / 回答 / 公開フラグ』の表記ゆれや空白を確認してください。");
       }
 
-      say("全行数(ヘッダ除く): " + rows.length);
-
-      // 一旦フィルタ無しで見えるか確認（公開フラグを無視してみる）
-      const sanity = rows.slice(0, 3);
-      say({ sampleFirstRows: sanity });
-
-      // 公開フラグで絞る
       const data = rows.filter(r => isPublic(r[idx.publicFlag]));
-      say("公開フラグTRUEの件数: " + data.length);
-
-      // UI 出力
+      const container = $("#faq-container");
       container.innerHTML = "";
 
       if (!data.length) {
-        container.innerHTML =
-          '<div class="error" style="color:#c62828;background:#ffebee;padding:12px;border-radius:8px;">' +
-          '表示対象のFAQが0件です（公開フラグがTRUEになっているかご確認ください）。</div>';
+        container.innerHTML = `<div style="color:#c62828;background:#ffebee;padding:12px;border-radius:8px;">
+          表示対象のFAQが0件です（公開フラグTRUEをご確認ください）。
+        </div>`;
         return;
       }
 
-      // カテゴリ毎にまとめる
+      // カテゴリごとにまとめて描画
       const grouped = {};
       data.forEach(r => {
-        const cat = r[idx.category] || "その他";
+        const cat = (r[idx.category] || "その他").toString();
         (grouped[cat] ||= []).push(r);
       });
 
@@ -108,12 +83,10 @@
         container.appendChild(wrap);
       }
     } catch (err) {
-      document.getElementById("faq-container").innerHTML =
-        `<div class="error" style="color:#c62828;background:#ffebee;padding:12px;border-radius:8px;">${err.message}</div>`;
+      $("#faq-container").innerHTML =
+        `<div style="color:#c62828;background:#ffebee;padding:12px;border-radius:8px;">${err.message}</div>`;
       console.error(err);
-      say(err.message);
     }
   }
-
   loadFAQ();
 </script>
