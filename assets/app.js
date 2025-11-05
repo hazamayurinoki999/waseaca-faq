@@ -1,166 +1,256 @@
+/* ========== Smart FAQ Center — Behavior (Promiseベース) ========== */
 (function(){
-  const cfg = window.FAQ_CONFIG || {};
-  const SHEET_ID = cfg.SHEET_ID;
-  const SHEET_NAME = cfg.SHEET_NAME || 'FAQ';
-  const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  // ---- Config ----
+  var cfg = window.FAQ_CONFIG || {};
+  var SHEET_ID = cfg.SHEET_ID;
+  var SHEET_NAME = cfg.SHEET_NAME || 'FAQ';
+  var API_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+    '/gviz/tq?tqx=out:json&headers=1&sheet=' + encodeURIComponent(SHEET_NAME);
 
-  let ALL_ITEMS = [];
-  let CURRENT_FILTER = { category: null, q: '' };
-  let landingChoice = 'showAll';
+  // ---- State ----
+  var ALL_ITEMS = [];
+  var CURRENT_FILTER = { category: null, q: '' };
+  var landingChoice = 'showAll';
 
-  const $ = (s) => document.querySelector(s);
-  const isPublic = (v) => (v === true) || (String(v).trim().toUpperCase() === 'TRUE');
-  const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
-  function buildHeaderMap(headerRow){ const map={}; headerRow.forEach((n,i)=>{ const k=String(n??'').trim(); if(k) map[k]=i; }); return map; }
-  const REQUIRED_HEADERS = ['カテゴリ','質問','回答','公開フラグ'];
-  function validateHeaders(map){ const miss = REQUIRED_HEADERS.filter(k=>!(k in map)); if(miss.length) throw new Error(`見出し不足: ${miss.join('、')}`); }
-
-  function ensureContainer(){ let el = $('#faq-container'); if(!el){ el=document.createElement('div'); el.id='faq-container'; document.body.appendChild(el);} return el; }
-  function showAlert(msg){ ensureContainer().innerHTML = `<div class="alert">${escapeHtml(msg)}</div>`; }
-
-  function makeChevron(){ const el=document.createElement('span'); el.className='chev';
-    el.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+  // ---- Helpers ----
+  function $(s){ return document.querySelector(s); }
+  function isPublic(v){ return (v === true) || (String(v).trim().toUpperCase() === 'TRUE'); }
+  function escapeHtml(s){
+    s = String(s == null ? '' : s);
+    return s.replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
+  }
+  function buildHeaderMap(headerRow){
+    var map = {}; headerRow.forEach(function(n,i){ var k = String(n == null ? '' : n).trim(); if(k) map[k]=i; });
+    return map;
+  }
+  var REQUIRED_HEADERS = ['カテゴリ','質問','回答','公開フラグ'];
+  function validateHeaders(map){
+    var miss = REQUIRED_HEADERS.filter(function(k){ return !(k in map); });
+    if(miss.length) throw new Error('見出し不足: ' + miss.join('、'));
+  }
+  function ensureContainer(){
+    var el = $('#faq-container');
+    if(!el){ el=document.createElement('div'); el.id='faq-container'; document.body.appendChild(el); }
+    return el;
+  }
+  function showAlert(msg){ ensureContainer().innerHTML = '<div class="alert">'+ escapeHtml(msg) +'</div>'; }
+  function makeChevron(){
+    var el=document.createElement('span'); el.className='chev';
+    el.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
     return el;
   }
 
+  // ---- UI Builders ----
   function buildPills(categories){
-    const wrap = $('#categoryPills'); wrap.innerHTML='';
-    categories.forEach(cat=>{
-      const d=document.createElement('div'); d.className='pill'; d.textContent=cat; d.dataset.cat=cat;
-      d.addEventListener('click',()=>{ CURRENT_FILTER.category = (CURRENT_FILTER.category===cat? null : cat); syncPills(); render(); });
+    var wrap = $('#categoryPills'); if(!wrap) return;
+    wrap.innerHTML='';
+    categories.forEach(function(cat){
+      var d=document.createElement('div'); d.className='pill'; d.textContent=cat; d.dataset.cat=cat;
+      d.addEventListener('click', function(){
+        CURRENT_FILTER.category = (CURRENT_FILTER.category===cat? null : cat);
+        syncPills(); render();
+      });
       wrap.appendChild(d);
     });
-    $('#pillAll').onclick = ()=>{ CURRENT_FILTER.category=null; syncPills(); render(); };
+    var all = $('#pillAll');
+    if(all){ all.onclick = function(){ CURRENT_FILTER.category=null; syncPills(); render(); }; }
     syncPills();
   }
+
   function syncPills(){
-    document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
-    if(!CURRENT_FILTER.category) $('#pillAll').classList.add('active');
-    document.querySelectorAll('#categoryPills .pill').forEach(p=>{ if(p.dataset.cat===CURRENT_FILTER.category) p.classList.add('active'); });
+    var pills = document.querySelectorAll('.pill'); Array.prototype.forEach.call(pills, function(p){ p.classList.remove('active'); });
+    if(!CURRENT_FILTER.category){ var all = $('#pillAll'); if(all) all.classList.add('active'); }
+    var cats = document.querySelectorAll('#categoryPills .pill');
+    Array.prototype.forEach.call(cats, function(p){ if(p.dataset.cat===CURRENT_FILTER.category) p.classList.add('active'); });
   }
 
   function filterItems(){
-    const q = CURRENT_FILTER.q.trim().toLowerCase();
-    return ALL_ITEMS.filter(it=>{
+    var q = (CURRENT_FILTER.q || '').trim().toLowerCase();
+    return ALL_ITEMS.filter(function(it){
       if(CURRENT_FILTER.category && String(it.category)!==CURRENT_FILTER.category) return false;
       if(!q) return true;
-      const hay = `${it.category}\n${it.question}\n${it.answer}`.toLowerCase();
-      return hay.includes(q);
+      var hay = (it.category + '\n' + it.question + '\n' + it.answer).toLowerCase();
+      return hay.indexOf(q) !== -1;
     });
   }
 
-  function groupByCategory(items){ const g={}; for(const it of items){ const c=String(it.category||'その他'); (g[c] ||= []).push(it); } return g; }
+  function groupByCategory(items){
+    var g = {};
+    items.forEach(function(it){
+      var c = String(it.category || 'その他');
+      if(!g[c]) g[c]=[];
+      g[c].push(it);
+    });
+    return g;
+  }
 
   function render(){
-    const container = ensureContainer();
-    const items = filterItems();
-    if(!items.length){ container.innerHTML = `<div class="alert">条件に一致するFAQがありません。</div>`; return; }
-    const grouped = groupByCategory(items);
-    const frag = document.createDocumentFragment();
-    Object.entries(grouped).forEach(([cat,list])=>{
-      const group = document.createElement('section'); group.className='group fadeIn';
-      group.innerHTML = `<h2>${escapeHtml(cat)}</h2>`;
-      list.forEach(it=>{
-        const card=document.createElement('article'); card.className='card';
-        const q=document.createElement('div'); q.className='q';
-        const h3=document.createElement('h3'); h3.textContent=it.question??'';
-        const chev=makeChevron(); q.appendChild(h3); q.appendChild(chev);
-        const a=document.createElement('div'); a.className='a'; a.innerHTML=`<p>${escapeHtml(it.answer??'')}</p>`;
-        let opened=false;
-        q.addEventListener('click',()=>{
-          opened=!opened; chev.style.transform = opened? 'rotate(180deg)':'rotate(0)';
-          if(opened){ a.classList.add('open'); a.style.maxHeight = a.scrollHeight + 24 + 'px'; }
-          else{ a.style.maxHeight='0px'; a.addEventListener('transitionend',()=>a.classList.remove('open'),{once:true}); }
-        });
-        card.appendChild(q); card.appendChild(a); // （既存の render() 内、card.appendChild(q); card.appendChild(a); の直後あたりに追加）
-const fb = document.createElement('div');
-fb.className = 'helpful';
-fb.innerHTML = `
-  <button type="button" class="btn tiny ok">役に立った</button>
-  <button type="button" class="btn tiny ghost">いいえ</button>
-`;
-a.appendChild(fb);
+    var container = ensureContainer();
+    var items = filterItems();
+    if(!items.length){ container.innerHTML = '<div class="alert">条件に一致するFAQがありません。</div>'; return; }
 
-const makeId = (s) => String(s||'').toLowerCase().slice(0,80); // 簡易ID（あとで差し替え可）
-fb.querySelector('.ok').addEventListener('click', ()=> {
-  console.log('[helpful=YES]', { id: makeId(it.question), q: it.question });
-  // TODO: 後でGAS/SheetsへPOST
-});
-fb.querySelector('.ghost').addEventListener('click', ()=> {
-  console.log('[helpful=NO]', { id: makeId(it.question), q: it.question });
-  // TODO: 「未解決ログ」へ書き込み or 問い合わせ誘導
-});group.appendChild(card);
+    var grouped = groupByCategory(items);
+    var frag = document.createDocumentFragment();
+
+    Object.keys(grouped).sort(function(a,b){ return a.localeCompare(b,'ja'); }).forEach(function(cat){
+      var list = grouped[cat];
+
+      var sec = document.createElement('section');
+      sec.className = 'group fadeIn';
+
+      // カテゴリヘッダ
+      var head = document.createElement('button');
+      head.className = 'cat-head';
+      head.setAttribute('type','button');
+      head.setAttribute('aria-expanded','false');
+      head.innerHTML =
+        '<span class="cat-title">'+ escapeHtml(cat) +'</span>' +
+        '<span class="badge">'+ list.length +'</span>' +
+        '<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>';
+
+      var body = document.createElement('div');
+      body.className = 'cat-body';
+
+      // 質問カード
+      list.forEach(function(it){
+        var card=document.createElement('article'); card.className='card';
+        var q=document.createElement('div'); q.className='q';
+        var h3=document.createElement('h3'); h3.textContent=(it.question || '');
+        var chev=makeChevron(); q.appendChild(h3); q.appendChild(chev);
+        var a=document.createElement('div'); a.className='a'; a.innerHTML='<p>'+ escapeHtml(it.answer || '') +'</p>';
+
+        var opened=false;
+        q.addEventListener('click', function(){
+          opened=!opened; chev.style.transform = opened? 'rotate(180deg)':'rotate(0)';
+          if(opened){ a.classList.add('open'); a.style.maxHeight = (a.scrollHeight + 24) + 'px'; }
+          else{ a.style.maxHeight='0px'; a.addEventListener('transitionend', function(){ a.classList.remove('open'); }, {once:true}); }
+        });
+
+        // 役立ち度ボタン（consoleに記録、後でSheets/GASに差し替え）
+        var fb = document.createElement('div');
+        fb.className = 'helpful';
+        fb.innerHTML = '<button type="button" class="btn tiny ok">役に立った</button>' +
+                       '<button type="button" class="btn tiny ghost">いいえ</button>';
+        a.appendChild(fb);
+        var makeId = function(s){ return String(s||'').toLowerCase().slice(0,80); };
+        fb.querySelector('.ok').addEventListener('click', function(){ console.log('[helpful=YES]', { id: makeId(it.question), q: it.question }); });
+        fb.querySelector('.ghost').addEventListener('click', function(){ console.log('[helpful=NO]', { id: makeId(it.question), q: it.question }); });
+
+        card.appendChild(q); card.appendChild(a); body.appendChild(card);
       });
-      frag.appendChild(group);
+
+      head.addEventListener('click', function(){
+        var expanded = head.getAttribute('aria-expanded') === 'true';
+        head.setAttribute('aria-expanded', String(!expanded));
+        sec.classList.toggle('open', !expanded);
+      });
+
+      sec.appendChild(head);
+      sec.appendChild(body);
+      frag.appendChild(sec);
     });
+
     container.innerHTML=''; container.appendChild(frag);
   }
 
-  // ここが Promise 版
+  // ---- Data load (Promise) ----
   function loadFAQ(){
     return fetch(API_URL, {cache:'no-store'})
-      .then(res => res.text())
-      .then(text => {
-        if(!text.startsWith('/*O_o*/')) throw new Error('シート公開設定またはID/タブ名を確認してください。');
-        let json;
-        try{ json = JSON.parse(text.substring(47, text.length-2)); }
-        catch{ throw new Error('シート応答の解析に失敗しました。'); }
-        let header = (json.table.cols||[]).map(c=> (c&&c.label)? String(c.label).trim(): '');
-        let rows = (json.table.rows||[]).map(r=> (r.c||[]).map(c=> (c? c.v: '')));
-        const invalid = header.every(h=> !h || /^[A-Z]$/.test(h));
-        if(invalid && rows.length){ header = rows.shift().map(v=> String(v??'').trim()); }
-        const map = buildHeaderMap(header); validateHeaders(map);
-        ALL_ITEMS = rows.map(r=>({
-          category: r[map['カテゴリ']] ?? '',
-          question: r[map['質問']] ?? '',
-          answer:   r[map['回答']] ?? '',
-          public:   r[map['公開フラグ']]
-        })).filter(it=> isPublic(it.public));
+      .then(function(res){ return res.text(); })
+      .then(function(text){
+        if(text.indexOf('/*O_o*/') !== 0) throw new Error('シート公開設定またはID/タブ名を確認してください。');
 
-        const cats = [...new Set(ALL_ITEMS.map(it=> String(it.category||'その他')))]
-          .sort((a,b)=> a.localeCompare(b,'ja'));
+        var json;
+        try { json = JSON.parse(text.substring(47, text.length-2)); }
+        catch(e){ throw new Error('シート応答の解析に失敗しました。'); }
+
+        var header = (json.table.cols || []).map(function(c){ return (c && c.label) ? String(c.label).trim() : ''; });
+        var rows = (json.table.rows || []).map(function(r){ return (r.c || []).map(function(c){ return c ? c.v : ''; }); });
+
+        var invalid = header.every(function(h){ return !h || /^[A-Z]$/.test(h); });
+        if(invalid && rows.length){ header = rows.shift().map(function(v){ return String(v == null ? '' : v).trim(); }); }
+
+        var map = buildHeaderMap(header); validateHeaders(map);
+
+        ALL_ITEMS = rows.map(function(r){
+          return {
+            category: r[map['カテゴリ']] || '',
+            question: r[map['質問']] || '',
+            answer:   r[map['回答']] || '',
+            public:   r[map['公開フラグ']]
+          };
+        }).filter(function(it){ return isPublic(it.public); });
+
+        var cats = Array.from(new Set(ALL_ITEMS.map(function(it){ return String(it.category || 'その他'); })))
+          .sort(function(a,b){ return a.localeCompare(b,'ja'); });
+
         buildPills(cats);
         render();
       });
   }
 
-  // Landing
+  // ---- Landing (入口) ----
+  function startLanding(){
+    var landing = $('#landing'); if(!landing) return;
+    landing.classList.add('fadeOutUp');
+    setTimeout(function(){ landing.hidden = true; }, 500);
+
+    if(landingChoice === 'bySearch'){
+      var inp = $('#searchInput'); if(inp) inp.focus();
+    }else if(landingChoice === 'byCategory'){
+      CURRENT_FILTER.category = null; syncPills();
+      if(window.scrollTo) window.scrollTo({top:0, behavior:'smooth'});
+    }
+  }
+
   function initLanding(){
-    const landing = $('#landing');
-    const url = new URL(location.href);
-    const showLanding = url.searchParams.get('landing') === '1' || (cfg.showLandingByDefault && url.searchParams.get('landing') !== '0');
+    var landing = $('#landing'); if(!landing) return;
+    var url = new URL(location.href);
+    var showLanding = (url.searchParams.get('landing') === '1') ||
+                      ((cfg.showLandingByDefault && url.searchParams.get('landing') !== '0'));
     if(showLanding) landing.hidden = false;
 
-    $('#choices').addEventListener('click', (e)=>{
-      const t = e.target.closest('.choice'); if(!t) return;
-      landingChoice = t.dataset.action; document.querySelectorAll('.choice').forEach(c=>c.style.outline='none');
-      t.style.outline = '2px solid rgba(123,255,199,.7)';
-    });
+    var choices = $('#choices');
+    if(choices){
+      choices.addEventListener('click', function(e){
+        var t = e.target.closest('.choice'); if(!t) return;
+        landingChoice = t.dataset.action || 'showAll';
+        var all = document.querySelectorAll('.choice');
+        Array.prototype.forEach.call(all, function(c){ c.style.outline='none'; });
+        t.style.outline = '2px solid rgba(255,168,0,.7)';
+        startLanding(); // カード押下で即遷移
+      });
+    }
 
-    $('#startBtn').onclick = function(){
-      landing.classList.add('fadeOutUp'); setTimeout(()=> landing.hidden = true, 500);
-      if(landingChoice==='bySearch'){ $('#searchInput').focus(); }
-      if(landingChoice==='byCategory'){ CURRENT_FILTER.category = null; syncPills(); window.scrollTo({top:0, behavior:'smooth'}); }
+    var startBtn = $('#startBtn'); if(startBtn) startBtn.onclick = startLanding;
+    var skipBtn  = $('#skipBtn');  if(skipBtn)  skipBtn.onclick  = startLanding;
+    var menuBtn  = $('#openLanding'); if(menuBtn) menuBtn.onclick = function(){
+      landing.hidden = false; landing.classList.remove('fadeOutUp');
     };
-    $('#skipBtn').onclick = function(){ landing.classList.add('fadeOutUp'); setTimeout(()=> landing.hidden = true, 500); };
-    $('#openLanding').onclick = function(){ landing.hidden = false; landing.classList.remove('fadeOutUp'); };
   }
 
-  function initSearch(){ $('#searchInput').addEventListener('input', (e)=>{ CURRENT_FILTER.q = e.target.value; render(); }); }
+  // ---- Search / Reload ----
+  function initSearch(){
+    var si = $('#searchInput'); if(!si) return;
+    si.addEventListener('input', function(e){ CURRENT_FILTER.q = e.target.value || ''; render(); });
+  }
   function initReload(){
-    $('#reload').onclick = function(){
+    var btn = $('#reload'); if(!btn) return;
+    btn.onclick = function(){
       loadFAQ()
-        .then(()=>{ showAlert('最新のデータに更新しました。'); setTimeout(()=>render(), 600); })
-        .catch(e=> showAlert(e.message||String(e)));
+        .then(function(){
+          showAlert('最新のデータに更新しました。');
+          setTimeout(render, 600);
+        })
+        .catch(function(e){ showAlert(e.message || String(e)); });
     };
   }
 
-  // DOM Ready
+  // ---- Boot ----
   document.addEventListener('DOMContentLoaded', function(){
     try{
       initLanding(); initSearch(); initReload();
-      loadFAQ().catch(e=>{ showAlert(e.message || String(e)); console.error(e); });
+      loadFAQ().catch(function(e){ showAlert(e.message || String(e)); console.error(e); });
     } catch(e){
       showAlert(e.message || String(e)); console.error(e);
     }
