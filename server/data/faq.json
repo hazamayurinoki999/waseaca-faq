@@ -1,0 +1,20 @@
+[
+  {
+    "category": "入学・転校",
+    "question": "入塾手続きに必要な書類はありますか？",
+    "answer": "入塾申込書、パスポートのコピー、最新の成績表をご用意ください。詳細は公式サイトの入塾案内ページをご確認ください。",
+    "url": "https://waseaca-singapore.com/admission/"
+  },
+  {
+    "category": "授業・カリキュラム",
+    "question": "授業は日本語ですか？",
+    "answer": "主要科目は日本語で実施していますが、英語強化のための英語授業もカリキュラムに含まれています。",
+    "url": "https://waseaca-singapore.com/curriculum/"
+  },
+  {
+    "category": "保護者向けサービス",
+    "question": "保護者面談はいつ行われますか？",
+    "answer": "学期ごとに定期面談を行います。必要に応じて個別面談も随時承っていますので、お気軽にご相談ください。",
+    "url": "https://waseaca-singapore.com/parents/"
+  }
+]
