@@ -6,12 +6,9 @@
 <header class="header"><div class="container bar">
   <div class="brand">
     <div class="logo"></div>
-    <div>
-      <div class="title">FAQセンター</div>
-      <div class="subtle">早稲田アカデミーシンガポール校</div>
-    </div>
+    <div><div class="title">FAQセンター</div><div class="subtle">早稲田アカデミーシンガポール校</div></div>
   </div>
-  <a class="btn ghost" href="./">ホーム</a>
+  <a class="btn ghost" data-home>ホームへ</a>
 </div></header>
 
 <main class="container landing">
@@ -20,28 +17,20 @@
   <p class="stepnote">3つの中から選んで「スタート」を押してください。</p>
 
   <div class="choices">
-    <div class="choice" data-to="faq.html">
-      <div class="ico"></div>
-      <div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div>
-    </div>
-    <div class="choice" data-to="search.html">
-      <div class="ico"></div>
-      <div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div>
-    </div>
-    <div class="choice" data-to="ai.html">
-      <div class="ico"></div>
-      <div><h3>AIで検索</h3><p>キャラクターと会話で案内（準備中）</p></div>
-    </div>
+    <div class="choice" data-to="faq.html"><div class="ico"></div><div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div></div>
+    <div class="choice" data-to="search.html"><div class="ico"></div><div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div></div>
+    <div class="choice" data-to="ai.html"><div class="ico"></div><div><h3>AIで検索</h3><p>会話で案内（準備中）</p></div></div>
   </div>
 
   <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
     <button id="startBtn" class="btn primary">スタート</button>
-    <a class="btn ghost" href="https://example.com">ホームへ</a>
+    <a class="btn ghost" data-home>ホームへ</a>
   </div>
 </main>
 
 <div class="site-footer">© 早稲田アカデミーシンガポール校 / Waseda Academy Singapore.</div>
 
-<script>window.FAQ_CONFIG={SHEET_ID:"YOUR_SHEET_ID",SHEET_NAME:"FAQ"};</script>
+<script src="assets/config.js"></script>
+<script src="assets/common.js"></script>
 <script src="assets/landing.js"></script>
 </body></html>
