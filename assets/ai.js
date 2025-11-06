@@ -1,6 +1,6 @@
+/* AI placeholder */
 (function(){
   document.addEventListener('DOMContentLoaded', function(){
-    var sub = document.querySelector('.brand .subtle'); if(sub) sub.classList.add('site-note');
     var box=document.getElementById('chatBox');
     var send=document.getElementById('aiSend');
     send.addEventListener('click', function(){
