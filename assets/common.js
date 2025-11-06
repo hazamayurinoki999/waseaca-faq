@@ -9,6 +9,9 @@
   function hueByName(name) { var s = String(name || ''), h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return (h % 360); }
 
   function loadFAQ(cfg) {
+    if (!cfg || !cfg.SHEET_ID) {
+      return Promise.reject(new Error('SHEET_ID が設定されていません。assets/config.js を確認してください。'));
+    }
     var SHEET_ID = cfg.SHEET_ID;
     var SHEET_NAME = cfg.SHEET_NAME || 'FAQ';
     var API_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&headers=1&sheet=' + encodeURIComponent(SHEET_NAME);
@@ -29,12 +32,31 @@
       });
   }
 
+  function resolvePath(target) {
+    if (!target && target !== '') return target;
+    var str = String(target || '').trim();
+    if (!str) return str;
+    if (/^(https?:)?\/\//i.test(str) || /^mailto:/i.test(str) || /^tel:/i.test(str) || str.charAt(0) === '#') return str;
+    var base = (window.FAQ_CONFIG && FAQ_CONFIG.BASE_PATH) || '';
+    if (!base) return str;
+    var trimmedBase = base.replace(/\/$/, '');
+    if (!trimmedBase) return str.charAt(0) === '/' ? str : '/' + str;
+    if (str.charAt(0) === '/') return trimmedBase + str;
+    return trimmedBase + '/' + str;
+  }
+
   function initHomeLinks() {
-    var url = (window.FAQ_CONFIG && FAQ_CONFIG.HOME_URL) || '/';
+    var url = resolvePath((window.FAQ_CONFIG && FAQ_CONFIG.HOME_URL) || '/');
     document.querySelectorAll('[data-home]').forEach(function (a) { a.href = url; });
+    document.querySelectorAll('[data-nav]').forEach(function (a) {
+      var dest = a.getAttribute('data-nav');
+      if (!dest) return;
+      var resolved = resolvePath(dest);
+      if (resolved) a.href = resolved;
+    });
     var sub = document.querySelector('.brand .subtle'); if (sub) sub.classList.add('site-note');
   }
   document.addEventListener('DOMContentLoaded', initHomeLinks);
 
-  window.FAQ = { $, escapeHtml, isPublic, hueByName, loadFAQ };
+  window.FAQ = { $, escapeHtml, isPublic, hueByName, loadFAQ, resolvePath };
 })();

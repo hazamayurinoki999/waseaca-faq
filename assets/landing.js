@@ -2,8 +2,9 @@
 (function () {
   function go(dest, newTab) {
     if (!dest) return;
-    if (newTab) { window.open(dest, '_blank'); return; }
-    location.assign(dest);
+    var resolved = (window.FAQ && FAQ.resolvePath) ? FAQ.resolvePath(dest) : dest;
+    if (newTab) { window.open(resolved, '_blank'); return; }
+    location.assign(resolved);
   }
 
   document.addEventListener('DOMContentLoaded', function () {
