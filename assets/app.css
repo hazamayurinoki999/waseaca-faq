@@ -109,6 +109,16 @@ body{
 /* ---------- 薄めの注釈系 ---------- */
 .subtle{ color:var(--muted); font-size:14px; }
 .stepnote{ color:var(--muted); font-size:13px; margin-top:4px; }
+.note{
+  margin:12px 0;
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(30,102,255,.12);
+  border:1px solid rgba(30,102,255,.25);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.5;
+}
 
 /* ---------- Controls / pills / buttons（共通） ---------- */
 .tools{display:flex;gap:10px;align-items:center;margin:14px 0 6px;flex-wrap:wrap}
@@ -217,6 +227,12 @@ body{
 .composer .btn{
   height:44px; padding:0 18px; white-space:nowrap;
 }
+
+.ref-title{font-weight:700;margin-bottom:6px;}
+.refs{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.5;color:var(--text);}
+.refs li{margin-bottom:6px;}
+.refs a{color:var(--brand-blue);}
+.ref-desc{color:var(--muted);font-size:12px;margin-top:2px;}
 
 /* ---------- Responsive（補足） ---------- */
 @media (max-width:720px){
