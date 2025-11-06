@@ -173,3 +173,80 @@ body{
   .composer{ flex-direction:column; align-items:stretch; }
   .composer .btn{ width:100%; }
 }
+/* ===== Header nav（入口/キーワード/AI/ホーム）— スマホ安定＋強いホバー ===== */
+
+/* デスクトップ基準 */
+.foot-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.foot-actions .btn{
+  white-space:nowrap;                /* 改行させない */
+  border-radius:999px;
+}
+
+/* ホバー／フォーカスを強調（ヘッダー内だけ） */
+.header .foot-actions .btn.ghost{
+  background:rgba(0,0,0,.06);
+  border-color:rgba(0,0,0,.18);
+  color:#0f1d34;
+  transition:
+    transform .15s ease,
+    box-shadow .2s ease,
+    background-color .15s ease,
+    border-color .15s ease;
+}
+.header .foot-actions .btn.ghost:hover,
+.header .foot-actions .btn.ghost:focus-visible{
+  background:rgba(0,0,0,.12);
+  border-color:rgba(0,0,0,.25);
+  box-shadow:0 3px 14px rgba(0,0,0,.16);
+  transform:translateY(-1px) scale(1.02);
+  outline:2px solid rgba(30,102,255,.35);
+  outline-offset:2px;
+}
+.header .foot-actions .btn.ghost:active{
+  transform:translateY(0) scale(.98);
+  box-shadow:0 1px 6px rgba(0,0,0,.12) inset;
+}
+
+/* “今いるページ”を常時強調（HTML側で aria-current="page" or .is-active を付与） */
+.header .foot-actions .btn.ghost.is-active,
+.header .foot-actions .btn.ghost[aria-current="page"]{
+  background:linear-gradient(135deg, var(--brand-blue), var(--brand-green));
+  color:#081422;
+  border-color:transparent;
+  box-shadow:0 6px 18px rgba(30,102,255,.28);
+}
+
+/* スマホ：ブランドを上段、ナビは横スクロールのチップ列に */
+@media (max-width: 720px){
+  .header .bar{ align-items:flex-start; gap:8px; }
+  .brand{ min-width:0; }
+
+  .site-note{
+    max-width:65vw;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .foot-actions{
+    order:2;
+    width:100%;
+    flex-wrap:nowrap;               /* 折り返さず横並び */
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:4px 0 6px;
+    scrollbar-width:none;
+  }
+  .foot-actions::-webkit-scrollbar{ display:none; }
+
+  .foot-actions .btn{
+    flex:0 0 auto;
+    font-size:14px;
+    padding:8px 12px;
+  }
+}
