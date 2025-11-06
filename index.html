@@ -1,72 +1,47 @@
-<!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Smart FAQ Center</title>
-<link rel="preload" href="assets/app.css?v=2025.11.06" as="style">
-<link rel="stylesheet" href="assets/app.css?v=2025.11.06">
-</head>
-<body>
-<header class="header">
-<div class="container bar">
-<div class="brand">
-<div class="logo" aria-hidden="true"></div>
-<div>
-<div class="title">Smart FAQ Center</div>
-<div class="subtle tiny">Googleスプレッドシートと自動連携</div>
-</div>
-</div>
-<div class="foot-actions">
-<button class="btn ghost" id="openLanding">メニュー</button>
-<button class="btn ghost" id="reload">再読込</button>
-</div>
-</div>
-</header>
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FAQセンター | 入口</title>
+<link rel="stylesheet" href="assets/app.css">
+</head><body>
+<header class="header"><div class="container bar">
+  <div class="brand">
+    <div class="logo"></div>
+    <div>
+      <div class="title">FAQセンター</div>
+      <div class="subtle">早稲田アカデミーシンガポール校</div>
+    </div>
+  </div>
+  <a class="btn ghost" href="./">ホーム</a>
+</div></header>
 
+<main class="container landing">
+  <h1>いらっしゃいませ。何から始めますか？</h1>
+  <p class="subtle">目的に合った検索方法を選んでください。</p>
+  <p class="stepnote">3つの中から選んで「スタート」を押してください。</p>
 
-<main class="container">
-<div class="tools fadeIn">
-<div class="search" role="search">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
-<input id="searchInput" placeholder="キーワードで検索（例：アカウント、支払い、ログイン）"/>
-</div>
-<div class="pill" id="pillAll" aria-pressed="true">すべて</div>
-<div id="categoryPills" class="pill-wrap"></div>
-</div>
+  <div class="choices">
+    <div class="choice" data-to="faq.html">
+      <div class="ico"></div>
+      <div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div>
+    </div>
+    <div class="choice" data-to="search.html">
+      <div class="ico"></div>
+      <div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div>
+    </div>
+    <div class="choice" data-to="ai.html">
+      <div class="ico"></div>
+      <div><h3>AIで検索</h3><p>キャラクターと会話で案内（準備中）</p></div>
+    </div>
+  </div>
 
-
-<div id="faq-container"><p class="subtle">読み込み中…</p></div>
+  <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+    <button id="startBtn" class="btn primary">スタート</button>
+    <a class="btn ghost" href="https://example.com">ホームへ</a>
+  </div>
 </main>
 
+<div class="site-footer">© 早稲田アカデミーシンガポール校 / Waseda Academy Singapore.</div>
 
-<!-- Landing -->
-<div class="landing" id="landing" hidden>
-<div class="panel">
-<h1>いらっしゃいませ。何から始めますか？</h1>
-<p class="lead">目的に合わせて入口を選択。選択後はアニメーションでFAQへ遷移します。</p>
-<div class="choices" id="choices">
-<button class="choice" data-action="showAll" type="button"><div class="ico"></div><div><h3>すべてを見る</h3><p>公開中のFAQをすべて一覧表示</p></div></button>
-<button class="choice" data-action="byCategory" type="button"><div class="ico"></div><div><h3>カテゴリから探す</h3><p>よく使うカテゴリを絞り込み</p></div></button>
-<button class="choice" data-action="bySearch" type="button"><div class="ico"></div><div><h3>キーワード検索</h3><p>知りたい言葉ですぐヒット</p></div></button>
-</div>
-<div class="actions">
-<button class="btn primary" id="startBtn" type="button">はじめる</button>
-<button class="btn" id="skipBtn" type="button">スキップ</button>
-</div>
-</div>
-</div>
-
-
-<script>
-window.FAQ_CONFIG = {
-SHEET_ID: "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc",
-SHEET_NAME: "FAQ",
-// 初回にランディングを表示するか（URLで ?landing=0 なら抑制）
-showLandingByDefault: true,
-HOME_URL: "https://waseaca-singapore.com/"  // ⑧ ここを入れておくと便利
-};
-</script>
-<script src="assets/app.js?v=2025.11.06" defer></script>
-</body>
-</html>
+<script>window.FAQ_CONFIG={SHEET_ID:"YOUR_SHEET_ID",SHEET_NAME:"FAQ"};</script>
+<script src="assets/landing.js"></script>
+</body></html>
