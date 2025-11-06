@@ -23,17 +23,29 @@ body{
 }
 .container{max-width:1100px;margin:0 auto;padding:16px 20px}
 
-/* Header */
-.header{position:sticky; top:0; z-index:50; backdrop-filter:saturate(140%) blur(8px);
-  background:linear-gradient(180deg, rgba(17,24,39,.75), rgba(17,24,39,.45)); border-bottom:1px solid var(--border);}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px;min-width:260px}
-.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green));box-shadow:var(--shadow)}
-.title{font-weight:800;letter-spacing:.2px}
-.site-note{color:var(--text);background:linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.12));
-  border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:4px 10px; font-size:12px; backdrop-filter: blur(6px);}
-.site-footer{margin:24px auto;padding:12px 20px;max-width:1100px;color:var(--muted);font-size:12px}
-.site-footer a{color:var(--muted);text-decoration:underline}
+/* Header – くっきり見える配色に */
+.header{
+  position:sticky; top:0; z-index:50;
+  background:var(--surface);                /* ← 背景グラデの影響を断つ */
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  backdrop-filter:saturate(140%) blur(8px); /* なくてもOK（残してもOK） */
+}
+
+@media (prefers-color-scheme: dark){
+  .header{
+    background:rgba(18,26,43,.94);          /* ダーク時はやや濃いめ */
+    box-shadow:0 2px 12px rgba(0,0,0,.45);
+  }
+}
+
+.subtle{ color:var(--muted); font-size:14px; }
+.stepnote{ color:var(--muted); font-size:13px; margin-top:4px; }
+.btn.ghost{ background:rgba(255,255,255,.06); }
+@media (prefers-color-scheme: dark){
+  .btn.ghost{ background:rgba(255,255,255,.04); }
+}
+
 
 /* Controls / pills / buttons */
 .tools{display:flex;gap:10px;align-items:center;margin:14px 0 6px;flex-wrap:wrap}
