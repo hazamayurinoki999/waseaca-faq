@@ -27,6 +27,16 @@
     <button id="aiSend" class="btn">送信</button>
   </div>
   <p class="note" id="aiReminder">無料枠内でのAI連携をテスト中です。回答に時間がかかる場合があります。</p>
+  <!-- ai.html の <main> の中に貼る（位置はお好みでOK） -->
+<h2>お問い合わせ</h2>
+<form id="inqForm" class="search-form" onsubmit="return false;">
+  <input id="inqName"  placeholder="お名前" />
+  <input id="inqMail"  placeholder="メールアドレス" />
+  <input id="inqCat"   placeholder="カテゴリ（任意）" />
+  <textarea id="inqMsg" placeholder="お問い合わせ内容" rows="4"></textarea>
+  <button id="inqSend" type="button">送信</button>
+</form>
+<p id="inqNote" class="muted"></p>
 </main>
 
 <div class="site-footer">© 早稲田アカデミーシンガポール校 / Waseda Academy Singapore.</div>
@@ -35,3 +45,52 @@
 <script src="assets/common.js"></script>
 <script src="assets/ai.js"></script>
 </body></html>
+<!-- ai.html の 一番下（</body>の直前）に貼る。config.js/common.js の後に置いてください -->
+<script>
+(async function(){
+  const btn  = document.getElementById('inqSend');
+  const note = document.getElementById('inqNote');
+  if(!btn) return;
+
+  // （任意）Apps Script から Config を引いて CONTACT_EMAIL を表示
+  try{
+    if (window.CONFIG.APPS_SCRIPT_ENDPOINT){
+      const r = await fetch(window.CONFIG.APPS_SCRIPT_ENDPOINT);
+      const j = await r.json();
+      if (j?.config?.CONTACT_EMAIL){
+        note.textContent = `送信先: ${j.config.CONTACT_EMAIL}（送信内容は自動記録されます）`;
+      }
+    }
+  }catch(e){/* 無視してOK */}
+
+  btn.addEventListener('click', async ()=>{
+    const data = {
+      fromName:  document.getElementById('inqName').value.trim(),
+      fromEmail: document.getElementById('inqMail').value.trim(),
+      category:  document.getElementById('inqCat').value.trim(),
+      message:   document.getElementById('inqMsg').value.trim(),
+    };
+    if (!data.message){
+      note.textContent = 'お問い合わせ内容を入力してください。';
+      return;
+    }
+    try{
+      const res = await fetch(window.CONFIG.APPS_SCRIPT_ENDPOINT, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      const j = await res.json();
+      if (j.ok){
+        note.textContent = '送信しました。担当より返信いたします。';
+        document.getElementById('inqForm').reset();
+      }else{
+        note.textContent = '送信に失敗しました。時間をおいて再試行してください。';
+      }
+    }catch(e){
+      note.textContent = '送信に失敗しました（通信エラー）。';
+    }
+  });
+})();
+</script>
+
