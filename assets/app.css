@@ -1,9 +1,9 @@
-/* ========== Smart FAQ Center — Brand × Modern UI (Waseda-Academy vibe) ========== */
+/* ========== Smart FAQ Center — Brand × Modern UI (WASEDA SG vibe) ========== */
 :root{
   --bg:#0b1220; --surface:#121a2b; --text:#eaf1ff; --muted:#a9b8d8;
-  --brand-blue:#1e66ff;      /* 早稲アカの青寄り */
-  --brand-green:#00c39a;     /* アクセント */
-  --brand-orange:#ffa800;    /* ロゴの橙（ハイライト／ホバー） */
+  --brand-blue:#1e66ff;      /* ロゴ青 */
+  --brand-green:#00c39a;     /* 補色アクセント */
+  --brand-orange:#ffa800;    /* ロゴ橙（ハイライト） */
   --card:#0f1524; --border:#1f2a44; --shadow:0 10px 25px rgba(14,22,48,.5);
 }
 @media (prefers-color-scheme: light){
@@ -33,10 +33,19 @@ body{
   border-bottom:1px solid var(--border);
 }
 .container{max-width:1100px;margin:0 auto;padding:16px 20px}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:center;gap:12px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:260px}
 .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green));box-shadow:var(--shadow)}
 .title{font-weight:800;letter-spacing:.2px}
+.site-note{ /* ⑤ ロゴ下の文言の視認性UP */
+  color:var(--text);
+  background:linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.12));
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:12px;
+  backdrop-filter: blur(6px);
+}
 .subtle{color:var(--muted);font-size:13px}
 .tiny{font-size:12px}
 .foot-actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -45,12 +54,16 @@ body{
 .tools{display:flex;gap:10px;align-items:center;margin:14px 0 6px;flex-wrap:wrap}
 .search{
   flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--border);
-  background:var(--surface);border-radius:12px;padding:8px 10px
+  background:var(--surface);border-radius:12px;padding:8px 10px;min-width:220px
 }
 .search input{flex:1;border:none;outline:none;font-size:15px;background:transparent;color:var(--text)}
-.pill{border:1px solid var(--border);padding:7px 10px;border-radius:999px;cursor:pointer;background:var(--surface);font-size:13px;transition:.2s}
-.pill:hover{border-color:rgba(255,168,0,.5); box-shadow:0 0 0 2px rgba(255,168,0,.15) inset}
-.pill.active{border-color:var(--brand-blue);box-shadow:0 0 0 2px rgba(30,102,255,.25) inset}
+.pill{
+  --h: 210; /* JSで上書き */
+  border:1px solid hsla(var(--h),80%,50%,.35);
+  padding:7px 10px;border-radius:999px;cursor:pointer;background:var(--surface);font-size:13px;transition:.2s
+}
+.pill:hover{border-color:hsla(var(--h),80%,55%,.7); box-shadow:0 0 0 2px hsla(var(--h),80%,55%,.15) inset}
+.pill.active{border-color:hsla(var(--h),80%,55%,.9); box-shadow:0 0 0 2px hsla(var(--h),80%,55%,.25) inset}
 .pill-wrap{display:flex;gap:8px;flex-wrap:wrap}
 
 .btn{
@@ -64,21 +77,47 @@ body{
 .btn.tiny.ok{border:none;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green)); color:#081422}
 .btn.tiny.ghost{background:transparent}
 
+/* ---------- Views (②,①:キーワード/AIページ) ---------- */
+.view{display:none}
+.view.active{display:block}
+.view .heading{margin:12px 0 8px;font-weight:800}
+#keywordView .kw-box{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px
+}
+#keywordView input{flex:1;min-width:220px;border:none;outline:none;background:transparent;color:var(--text);font-size:15px}
+#kwResults{margin-top:10px}
+
+/* AIチャットの見た目（ページだけ。機能は後で実装） */
+#aiView .chat{
+  border:1px solid var(--border);border-radius:14px;background:var(--surface);
+  padding:12px;max-height:min(72vh,800px);overflow:auto
+}
+.bubble{max-width:80%;padding:10px 12px;border-radius:14px;margin:6px 0;line-height:1.5}
+.bubble.bot{background:rgba(30,102,255,.12);border:1px solid rgba(30,102,255,.25)}
+.bubble.me{background:rgba(255,168,0,.12);border:1px solid rgba(255,168,0,.25);margin-left:auto}
+#aiView .composer{display:flex;gap:8px;margin-top:10px}
+#aiView textarea{flex:1;min-height:42px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);padding:10px;resize:vertical}
+
 /* ---------- Groups (カテゴリ) ---------- */
-.group{margin:20px 0}
+.group{margin:20px 0; --cat-h: 220} /* JSから上書き（④色付け） */
 .cat-head{
   width:100%; text-align:left; background:var(--card); color:var(--text);
-  border:1px solid var(--border); border-radius:14px; padding:14px 16px;
+  border:1px solid var(--border); border-left:6px solid hsl(var(--cat-h),85%,54%);
+  border-radius:14px; padding:14px 16px;
   display:flex; align-items:center; gap:10px; cursor:pointer; transition:.2s;
 }
 .cat-head:hover{border-color: rgba(255,168,0,.5); box-shadow:0 0 0 2px rgba(255,168,0,.2) inset}
 .cat-head .cat-title{font-weight:800}
-.badge{margin-left:auto;border-radius:999px;padding:2px 8px;font-size:12px;background:rgba(30,102,255,.12);color:var(--brand-blue);border:1px solid rgba(30,102,255,.25)}
+.badge{margin-left:auto;border-radius:999px;padding:2px 8px;font-size:12px;
+  background:hsla(var(--cat-h),85%,60%,.12); color:hsl(var(--cat-h),85%,60%);
+  border:1px solid hsla(var(--cat-h),85%,60%,.35)
+}
 .group .cat-body{max-height:0; overflow:hidden; transition:max-height .35s ease, padding .25s ease; padding:0 2px}
 .group.open .cat-body{padding:8px 2px 2px; max-height:9999px}
 
 /* ---------- Cards (Q/A) ---------- */
-.card{border:1px solid var(--border);background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin:10px 0;transition:.15s}
+.card{border:1px solid var(--border);border-left:4px solid hsl(var(--cat-h),85%,54%);background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin:10px 0;transition:.15s}
 .card:hover{transform:translateY(-1px)}
 .q{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;cursor:pointer}
 .q:hover{background:linear-gradient(180deg, rgba(255,255,255,.04), transparent)}
@@ -93,7 +132,7 @@ body{
 .alert{color:#1f283a;background:#ddf4ff;border:1px solid #b5e2ff;padding:12px;border-radius:12px}
 @media (prefers-color-scheme: dark){ .alert{color:#cde8ff;background:rgba(35,115,223,.15);border-color:#1e3a8a} }
 
-/* ---------- Landing ---------- */
+/* ---------- Landing（①/⑥/⑦/⑧） ---------- */
 .landing{
   position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
   padding:24px; background:
@@ -102,21 +141,24 @@ body{
 }
 .landing[hidden]{display:none}
 .panel{
-  width:min(840px,92vw);
+  width:min(900px,92vw);
   background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
   border:1px solid var(--border); border-radius:20px; box-shadow:var(--shadow); padding:28px
 }
 .panel h1{margin:0 0 6px;font-size:clamp(20px,3.2vw,28px)}
-.panel .lead{margin:0 0 22px;color:var(--muted)}
+.panel .lead{margin:0 0 12px;color:var(--muted)}
+.panel .stepnote{margin:0 0 18px;color:var(--text);font-weight:700}
 .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
 .choice{
   border:1px solid var(--border); background:var(--card); border-radius:16px; padding:16px;
-  display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:.2s transform,.2s box-shadow,.2s border-color
+  display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:.2s transform,.2s box-shadow,.2s border-color, .2s opacity;
 }
-.choice:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:rgba(255,168,0,.6)}
-.choice .ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green));flex:0 0 auto}
+.choice .ico{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green));flex:0 0 auto}
 .choice h3{margin:0 0 6px;font-size:16px}
 .choice p{margin:0;color:var(--muted);font-size:13px}
+.choice:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:rgba(255,168,0,.6)}
+.choice.selected{transform:translateY(-3px) scale(1.03); border-color:rgba(30,102,255,.8); box-shadow:0 6px 20px rgba(30,102,255,.25)}
+.choice.dim{opacity:.55}
 .actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
 
 /* ---------- Animations / Motion ---------- */
@@ -134,3 +176,19 @@ body{
 
 /* ---------- Focus visible (アクセシビリティ) ---------- */
 :focus-visible{outline:2px solid rgba(255,168,0,.85); outline-offset:2px; border-radius:10px}
+
+/* ---------- Footer (③ ©表記) ---------- */
+.site-footer{margin:24px auto;padding:12px 20px;max-width:1100px;color:var(--muted);font-size:12px}
+.site-footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width:720px){
+  .bar{gap:10px}
+  .title{font-size:16px}
+  .tools{gap:8px}
+  .search{flex:1 1 100%}
+  .pill-wrap{flex:1 1 100%}
+  .q h3{font-size:15px}
+  .panel{padding:22px}
+  .choice .ico{width:36px;height:36px}
+}
