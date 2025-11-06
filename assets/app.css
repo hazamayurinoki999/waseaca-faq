@@ -25,28 +25,31 @@ body{
 }
 .container{max-width:1100px;margin:0 auto;padding:16px 20px}
 
-/* ---------- Header（視認性を上げる：ほぼソリッド） ---------- */
+/* ---------- Header（明るい固定トーン & 高コントラスト） ---------- */
 .header{
   position:sticky; top:0; z-index:50;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  background:linear-gradient(180deg,#f8fbff 0%,#eef6ff 100%);
+  border-bottom:1px solid rgba(0,0,0,.08);
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+  color:#0f1d34;
   backdrop-filter:saturate(140%) blur(8px);
-}
-@media (prefers-color-scheme: dark){
-  .header{
-    background:rgba(18,26,43,.94);
-    box-shadow:0 2px 12px rgba(0,0,0,.45);
-  }
 }
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:12px;min-width:260px}
 .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green));box-shadow:var(--shadow)}
 .title{font-weight:800;letter-spacing:.2px}
-.site-note{color:var(--text);background:linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.12));
-  border:1px solid rgba(255,255,255,.12); border-radius:999px; padding:4px 10px; font-size:12px; backdrop-filter: blur(6px);}
+.site-note{color:#0f1d34;background:rgba(0,0,0,.05);
+  border:1px solid rgba(0,0,0,.12); border-radius:999px; padding:4px 10px; font-size:12px; backdrop-filter: blur(6px);}
 .site-footer{margin:24px auto;padding:12px 20px;max-width:1100px;color:var(--muted);font-size:12px}
 .site-footer a{color:var(--muted);text-decoration:underline}
+
+/* ヘッダー上でのゴーストボタンの視認性向上 */
+.header .btn.ghost{
+  background:rgba(0,0,0,.06);
+  border-color:rgba(0,0,0,.18);
+  color:#0f1d34;
+}
+.header .btn.ghost:hover{ filter:brightness(1.03); }
 
 /* うすめの注釈系（未定義対策） */
 .subtle{ color:var(--muted); font-size:14px; }
@@ -65,7 +68,7 @@ body{
 .btn:hover{transform:translateY(-1px)}
 .btn.primary{background:linear-gradient(135deg,var(--brand-blue), var(--brand-green)); color:#081422; border:none}
 
-/* 視認性向上のゴーストボタン（ヘッダー等で少し浮かせる） */
+/* 非ヘッダー領域でのゴーストボタン（軽く浮かす） */
 .btn.ghost{ background:rgba(255,255,255,.06); }
 @media (prefers-color-scheme: dark){
   .btn.ghost{ background:rgba(255,255,255,.04); }
@@ -121,51 +124,16 @@ body{
 ::-webkit-scrollbar-track{background:transparent}
 :focus-visible{outline:2px solid rgba(255,168,0,.85); outline-offset:2px; border-radius:10px}
 
-/* ---------- Responsive ---------- */
-@media (max-width:720px){
-  .bar{gap:10px}
-  .title{font-size:16px}
-  .tools{gap:8px}
-  .search{flex:1 1 100%}
-  .pill-wrap{flex:1 1 100%}
-  .q h3{font-size:15px}
-}
-/* === Header: 明るいトーンで固定（ライト/ダーク関係なく） === */
-.header{
-  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%) !important;
-  border-bottom: 1px solid rgba(0,0,0,.08) !important;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06) !important;
-  color: #0f1d34; /* ヘッダー内テキスト色を濃いめに */
-}
-.header .title,
-.header .brand,
-.header a,
-.header .btn { color:#0f1d34 !important; }
-
-.header .btn.ghost{
-  /* 明るいヘッダー上でもボタンが見えるよう少しグレー背景 */
-  background: rgba(0,0,0,.06) !important;
-  border-color: rgba(0,0,0,.18) !important;
-}
-.header .btn.ghost:hover{ filter:brightness(1.03); }
-
-.header .site-note{
-  color:#0f1d34 !important;
-  background: rgba(0,0,0,.05) !important;
-  border-color: rgba(0,0,0,.12) !important;
-}
-/* === AI 検索UI: チャット/入力レイアウト改善 === */
+/* ---------- AI 検索UI: チャット/入力レイアウト ---------- */
 .chat{
   border:1px solid var(--border);
   background:var(--surface);
   border-radius:16px;
   padding:14px;
-  min-height:200px;           /* 初期エリアを広めに */
+  min-height:200px;
   max-height:50vh;
   overflow:auto;
 }
-
-/* 吹き出し見た目（任意/既存がなければ活きます） */
 .bubble{
   display:inline-block;
   max-width:min(85%, 720px);
@@ -182,34 +150,26 @@ body{
   border:1px solid rgba(255,168,0,.35);
   margin-left:auto;
 }
-
-/* 入力エリア（送信ボタン横並び） */
 .composer{
-  display:flex;
-  align-items:flex-end;
-  gap:10px;
-  margin-top:12px;
+  display:flex; align-items:flex-end; gap:10px; margin-top:12px;
 }
 .composer textarea{
-  flex:1;
-  min-height:96px;            /* 初期サイズを大きく */
-  max-height:40vh;
-  resize:vertical;            /* 縦方向のリサイズ可 */
-  padding:10px 12px;
-  border:1px solid var(--border);
-  border-radius:12px;
-  background:var(--surface);
-  color:var(--text);
-  line-height:1.5;
+  flex:1; min-height:96px; max-height:40vh; resize:vertical;
+  padding:10px 12px; border:1px solid var(--border); border-radius:12px;
+  background:var(--surface); color:var(--text); line-height:1.5;
 }
 .composer .btn{
-  height:44px;                /* ボタン高さを揃える */
-  padding:0 18px;
-  white-space:nowrap;
+  height:44px; padding:0 18px; white-space:nowrap;
 }
 
-/* モバイル時は縦積み＋ボタン全幅 */
-@media (max-width: 720px){
+/* ---------- Responsive ---------- */
+@media (max-width:720px){
+  .bar{gap:10px}
+  .title{font-size:16px}
+  .tools{gap:8px}
+  .search{flex:1 1 100%}
+  .pill-wrap{flex:1 1 100%}
+  .q h3{font-size:15px}
   .composer{ flex-direction:column; align-items:stretch; }
   .composer .btn{ width:100%; }
 }
