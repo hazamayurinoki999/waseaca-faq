@@ -1,10 +1,8 @@
+/* Keyword search page */
 (function(){
   var ALL=[];
-  function makeChevron(){
-    var el=document.createElement('span'); el.className='chev';
-    el.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
-    return el;
-  }
+  function makeChevron(){ var el=document.createElement('span'); el.className='chev';
+    el.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>'; return el; }
   function render(q){
     var box=document.getElementById('kwResults');
     var query=(q||'').toLowerCase();
@@ -31,8 +29,9 @@
     box.innerHTML=''; box.appendChild(frag);
   }
   document.addEventListener('DOMContentLoaded', function(){
-    var sub = document.querySelector('.brand .subtle'); if(sub) sub.classList.add('site-note');
-    FAQ.loadFAQ(FAQ_CONFIG).then(function(items){ ALL=items; }).catch(function(e){ document.getElementById('kwResults').innerHTML='<div class="alert">'+FAQ.escapeHtml(e.message||String(e))+'</div>'; });
+    FAQ.loadFAQ(FAQ_CONFIG).then(function(items){ ALL=items; }).catch(function(e){
+      document.getElementById('kwResults').innerHTML='<div class="alert">'+FAQ.escapeHtml(e.message||String(e))+'</div>';
+    });
     var input=document.getElementById('kwInput'); var btn=document.getElementById('kwRun');
     var run=function(){ render(input.value); };
     input.addEventListener('input', run); btn.addEventListener('click', run);
