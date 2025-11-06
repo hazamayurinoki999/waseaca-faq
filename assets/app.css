@@ -43,19 +43,74 @@ body{
 .site-footer{margin:24px auto;padding:12px 20px;max-width:1100px;color:var(--muted);font-size:12px}
 .site-footer a{color:var(--muted);text-decoration:underline}
 
-/* ヘッダー上でのゴーストボタンの視認性向上 */
+/* ---------- Header Nav（入口/キーワード/AI/ホーム） ---------- */
+.foot-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.foot-actions .btn{ white-space:nowrap; border-radius:999px; }
+
+/* ヘッダー上のゴーストボタン：見やすく＋強いホバー */
 .header .btn.ghost{
   background:rgba(0,0,0,.06);
   border-color:rgba(0,0,0,.18);
   color:#0f1d34;
 }
-.header .btn.ghost:hover{ filter:brightness(1.03); }
+.header .foot-actions .btn.ghost{
+  transition:
+    transform .15s ease,
+    box-shadow .2s ease,
+    background-color .15s ease,
+    border-color .15s ease,
+    outline-color .15s ease;
+}
+.header .foot-actions .btn.ghost:hover,
+.header .foot-actions .btn.ghost:focus-visible{
+  background:rgba(0,0,0,.12);
+  border-color:rgba(0,0,0,.25);
+  box-shadow:0 3px 14px rgba(0,0,0,.16);
+  transform:translateY(-1px) scale(1.02);
+  outline:2px solid rgba(30,102,255,.45);
+  outline-offset:2px;
+}
+.header .foot-actions .btn.ghost:active{
+  transform:translateY(0) scale(.98);
+  box-shadow:0 1px 6px rgba(0,0,0,.12) inset;
+}
+/* “今いるページ”を常時強調（aria-current="page" or .is-active） */
+.header .foot-actions .btn.ghost.is-active,
+.header .foot-actions .btn.ghost[aria-current="page"]{
+  background:linear-gradient(135deg, var(--brand-blue), var(--brand-green));
+  color:#081422;
+  border-color:transparent;
+  box-shadow:0 6px 18px rgba(30,102,255,.28);
+}
 
-/* うすめの注釈系（未定義対策） */
+/* スマホ：ブランドを上段、ナビは横スクロールのチップ列に */
+@media (max-width: 720px){
+  .header .bar{ align-items:flex-start; gap:8px; }
+  .brand{ min-width:0; }
+  .site-note{
+    max-width:65vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .foot-actions{
+    order:2; width:100%; flex-wrap:nowrap;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    padding:4px 0 6px; scrollbar-width:none;
+  }
+  .foot-actions::-webkit-scrollbar{ display:none; }
+  .foot-actions .btn{
+    flex:0 0 auto; font-size:14px; padding:8px 12px;
+  }
+}
+
+/* ---------- 薄めの注釈系 ---------- */
 .subtle{ color:var(--muted); font-size:14px; }
 .stepnote{ color:var(--muted); font-size:13px; margin-top:4px; }
 
-/* ---------- Controls / pills / buttons ---------- */
+/* ---------- Controls / pills / buttons（共通） ---------- */
 .tools{display:flex;gap:10px;align-items:center;margin:14px 0 6px;flex-wrap:wrap}
 .search{flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:8px 10px;min-width:220px}
 .search input{flex:1;border:none;outline:none;font-size:15px;background:transparent;color:var(--text)}
@@ -64,16 +119,17 @@ body{
 .pill.active{border-color:hsla(var(--h),80%,55%,.9);box-shadow:0 0 0 2px hsla(var(--h),80%,55%,.25) inset}
 .pill-wrap{display:flex;gap:8px;flex-wrap:wrap}
 
-.btn{appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700;transition:.2s}
+.btn{
+  appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);
+  padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700;transition:.2s;
+}
 .btn:hover{transform:translateY(-1px)}
 .btn.primary{background:linear-gradient(135deg,var(--brand-blue), var(--brand-green)); color:#081422; border:none}
-
 /* 非ヘッダー領域でのゴーストボタン（軽く浮かす） */
 .btn.ghost{ background:rgba(255,255,255,.06); }
 @media (prefers-color-scheme: dark){
   .btn.ghost{ background:rgba(255,255,255,.04); }
 }
-
 .btn.tiny{font-size:12px;padding:6px 10px;border-radius:10px}
 .btn.tiny.ok{border:none;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green)); color:#081422}
 .btn.tiny.ghost{background:transparent;border:1px solid var(--border)}
@@ -162,7 +218,7 @@ body{
   height:44px; padding:0 18px; white-space:nowrap;
 }
 
-/* ---------- Responsive ---------- */
+/* ---------- Responsive（補足） ---------- */
 @media (max-width:720px){
   .bar{gap:10px}
   .title{font-size:16px}
@@ -172,81 +228,4 @@ body{
   .q h3{font-size:15px}
   .composer{ flex-direction:column; align-items:stretch; }
   .composer .btn{ width:100%; }
-}
-/* ===== Header nav（入口/キーワード/AI/ホーム）— スマホ安定＋強いホバー ===== */
-
-/* デスクトップ基準 */
-.foot-actions{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-.foot-actions .btn{
-  white-space:nowrap;                /* 改行させない */
-  border-radius:999px;
-}
-
-/* ホバー／フォーカスを強調（ヘッダー内だけ） */
-.header .foot-actions .btn.ghost{
-  background:rgba(0,0,0,.06);
-  border-color:rgba(0,0,0,.18);
-  color:#0f1d34;
-  transition:
-    transform .15s ease,
-    box-shadow .2s ease,
-    background-color .15s ease,
-    border-color .15s ease;
-}
-.header .foot-actions .btn.ghost:hover,
-.header .foot-actions .btn.ghost:focus-visible{
-  background:rgba(0,0,0,.12);
-  border-color:rgba(0,0,0,.25);
-  box-shadow:0 3px 14px rgba(0,0,0,.16);
-  transform:translateY(-1px) scale(1.02);
-  outline:2px solid rgba(30,102,255,.35);
-  outline-offset:2px;
-}
-.header .foot-actions .btn.ghost:active{
-  transform:translateY(0) scale(.98);
-  box-shadow:0 1px 6px rgba(0,0,0,.12) inset;
-}
-
-/* “今いるページ”を常時強調（HTML側で aria-current="page" or .is-active を付与） */
-.header .foot-actions .btn.ghost.is-active,
-.header .foot-actions .btn.ghost[aria-current="page"]{
-  background:linear-gradient(135deg, var(--brand-blue), var(--brand-green));
-  color:#081422;
-  border-color:transparent;
-  box-shadow:0 6px 18px rgba(30,102,255,.28);
-}
-
-/* スマホ：ブランドを上段、ナビは横スクロールのチップ列に */
-@media (max-width: 720px){
-  .header .bar{ align-items:flex-start; gap:8px; }
-  .brand{ min-width:0; }
-
-  .site-note{
-    max-width:65vw;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  .foot-actions{
-    order:2;
-    width:100%;
-    flex-wrap:nowrap;               /* 折り返さず横並び */
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    padding:4px 0 6px;
-    scrollbar-width:none;
-  }
-  .foot-actions::-webkit-scrollbar{ display:none; }
-
-  .foot-actions .btn{
-    flex:0 0 auto;
-    font-size:14px;
-    padding:8px 12px;
-  }
 }
