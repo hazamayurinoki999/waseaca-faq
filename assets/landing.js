@@ -1,3 +1,4 @@
+/* Landing: pick a mode then navigate */
 (function(){
   var choice = null;
   function $(s){ return document.querySelector(s); }
@@ -8,7 +9,7 @@
       else{ c.classList.remove('selected'); c.classList.add('dim'); }
     });
     choice = target ? target.dataset.to : null;
-    $('#startBtn').disabled = !choice;
+    var start = $('#startBtn'); if(start) start.disabled = !choice;
   }
   document.addEventListener('DOMContentLoaded', function(){
     var list = document.querySelector('.choices');
@@ -18,13 +19,10 @@
         pick(c);
       });
     }
-    var start = document.getElementById('startBtn');
+    var start = $('#startBtn');
     if(start){
       start.disabled = true;
-      start.addEventListener('click', function(){
-        if(!choice) return;
-        location.href = choice; // faq.html / search.html / ai.html
-      });
+      start.addEventListener('click', function(){ if(choice) location.href = choice; });
     }
   });
 })();
