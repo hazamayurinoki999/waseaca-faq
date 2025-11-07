@@ -101,7 +101,10 @@
       const form = document.getElementById('inqForm');
       if(!btn){ return; }
 
-      const appConfig = window.APP_CONFIG || (window.APP_CONFIG = {});
+      const globalConfig = window.CONFIG || (window.CONFIG = {});
+      if (!window.APP_CONFIG) {
+        window.APP_CONFIG = globalConfig;
+      }
 
       const normaliseBase = (endpoint)=>{
         if (!endpoint) return '';
@@ -118,64 +121,72 @@
         }
       };
 
-      const buildContactEndpoint = (base)=>{
+      const buildActionEndpoint = (base, action)=>{
         if (!base) return '';
-        return base.includes('?') ? `${base}&action=contact` : `${base}?action=contact`;
+        try{
+          const url = new URL(base, window.location.href);
+          url.hash = '';
+          url.searchParams.set('action', action);
+          return url.toString();
+        }catch(_){
+          const idx = base.indexOf('?');
+          const clean = idx >= 0 ? base.slice(0, idx) : base;
+          return `${clean}?action=${action}`;
+        }
       };
 
-      const buildAiEndpoint = (base)=>{
-        if (!base) return '';
-        return base.includes('?') ? `${base}&action=ai` : `${base}?action=ai`;
+      const state = {
+        baseEndpoint: '',
+        contactEndpoint: ''
       };
 
-      let baseEndpoint = '';
-      let postEndpoint = '';
-
-      const applyBaseEndpoint = (candidate)=>{
+      const applyEndpointCandidate = (candidate)=>{
         const base = normaliseBase(candidate);
         if (!base) return false;
-        baseEndpoint = base;
-        postEndpoint = buildContactEndpoint(base);
-        const aiEndpoint = buildAiEndpoint(base);
-        Object.assign(appConfig, {
-          APPS_SCRIPT_ENDPOINT: base,
-          CONTACT_ENDPOINT: postEndpoint,
-          AI_PROXY_ENDPOINT: aiEndpoint || appConfig.AI_PROXY_ENDPOINT
-        });
-        if (window.CONFIG){
-          window.CONFIG.APPS_SCRIPT_ENDPOINT = base;
-          if (!window.CONFIG.AI_ENDPOINT || window.CONFIG.AI_ENDPOINT === '/api/chat'){
-            window.CONFIG.AI_ENDPOINT = aiEndpoint || window.CONFIG.AI_ENDPOINT;
+        state.baseEndpoint = base;
+        state.contactEndpoint = buildActionEndpoint(base, 'contact');
+        globalConfig.APPS_SCRIPT_ENDPOINT = base;
+        globalConfig.CONTACT_ENDPOINT = state.contactEndpoint;
+        if (!globalConfig.AI_PROXY_ENDPOINT || globalConfig.AI_PROXY_ENDPOINT === '/api/chat'){
+          const aiEndpoint = buildActionEndpoint(base, 'ai');
+          globalConfig.AI_PROXY_ENDPOINT = aiEndpoint;
+          if (!globalConfig.AI_ENDPOINT || globalConfig.AI_ENDPOINT === '/api/chat'){
+            globalConfig.AI_ENDPOINT = aiEndpoint;
           }
         }
         return true;
       };
 
       const initialCandidates = [
-        appConfig.CONTACT_ENDPOINT,
-        appConfig.APPS_SCRIPT_ENDPOINT,
-        window.CONFIG && window.CONFIG.APPS_SCRIPT_ENDPOINT,
+        globalConfig.CONTACT_ENDPOINT,
+        globalConfig.APPS_SCRIPT_ENDPOINT,
+        window.APP_CONFIG && (window.APP_CONFIG.CONTACT_ENDPOINT || window.APP_CONFIG.APPS_SCRIPT_ENDPOINT),
+        window.FAQ_CONFIG && window.FAQ_CONFIG.CONTACT_ENDPOINT,
         window.APPS_SCRIPT_ENDPOINT
       ];
 
-      for (let i = 0; i < initialCandidates.length && !baseEndpoint; i++){
-        applyBaseEndpoint(initialCandidates[i]);
+      for (let i = 0; i < initialCandidates.length && !state.baseEndpoint; i++){
+        applyEndpointCandidate(initialCandidates[i]);
       }
 
-      note.textContent = '送信内容は担当へ共有されます。';
+      note.textContent = state.contactEndpoint
+        ? '送信内容は担当へ共有されます。'
+        : '送信先を確認しています…';
 
       const fetchRemoteConfig = async ()=>{
-        if (!baseEndpoint) return;
+        if (!state.baseEndpoint) return;
         try{
-          const response = await fetch(baseEndpoint);
+          const response = await fetch(state.baseEndpoint);
           if (!response.ok) return;
           const payload = await response.json();
-          const remoteConfig = payload?.config || {};
-          if (remoteConfig.APPS_SCRIPT_ENDPOINT){
-            applyBaseEndpoint(remoteConfig.APPS_SCRIPT_ENDPOINT);
+          const remoteConfig = payload && payload.config ? payload.config : {};
+          if (remoteConfig.CONTACT_ENDPOINT){
+            applyEndpointCandidate(remoteConfig.CONTACT_ENDPOINT);
+          } else if (remoteConfig.APPS_SCRIPT_ENDPOINT){
+            applyEndpointCandidate(remoteConfig.APPS_SCRIPT_ENDPOINT);
           }
-          if (remoteConfig.CONTACT_EMAIL){
-            note.textContent = `送信先: ${remoteConfig.CONTACT_EMAIL}（送信内容は自動記録されます）`;
+          if (state.contactEndpoint){
+            note.textContent = '送信内容は担当へ共有されます。';
           }
         }catch(_){ /* noop */ }
       };
@@ -189,7 +200,7 @@
           category:  document.getElementById('inqCat').value.trim(),
           message:   document.getElementById('inqMsg').value.trim(),
         };
-        if (!postEndpoint){
+        if (!state.contactEndpoint){
           note.textContent = '送信先が未設定です（APPS_SCRIPT_ENDPOINT）。';
           return;
         }
@@ -199,7 +210,7 @@
         }
 
         try{
-          const res = await fetch(postEndpoint, {
+          const res = await fetch(state.contactEndpoint, {
             method:'POST',
             headers:{'Content-Type':'text/plain;charset=utf-8'},
             body: JSON.stringify(data)

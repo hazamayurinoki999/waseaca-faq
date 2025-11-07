@@ -1,42 +1,57 @@
 /*
- * グローバル設定を1か所で定義し、従来の window.CONFIG / window.FAQ_CONFIG の両方に適用する。
- * これによりマージ時に発生していた "CONFIG" と "FAQ_CONFIG" の重複定義/参照の不整合を解消する。
+ * 設定を一元化し、 window.CONFIG / window.APP_CONFIG / window.FAQ_CONFIG を同じ情報源から生成する。
+ * 以前は複数の設定オブジェクトが別々に存在し、マージ時にコンフリクトが発生しやすかったため統合した。
  */
 (function(){
-  var DEFAULT_APP_CONFIG = {
-    APPS_SCRIPT_ENDPOINT: "https://script.google.com/macros/s/AKfycbyUZY5vcrm8lQatRzyUBqHNZTZtpWZtbf6kHUKxI9X4grHns2LZp5x33xMyA2FzYFU/exec"
-  };
+  function appendAction(endpoint, action){
+    if (!endpoint) return '';
+    var value = String(endpoint).trim();
+    if (!value) return '';
+    try {
+      var url = new URL(value, window.location.href);
+      url.hash = '';
+      url.searchParams.set('action', action);
+      return url.toString();
+    } catch (_err) {
+      var idx = value.indexOf('?');
+      var base = idx >= 0 ? value.slice(0, idx) : value;
+      return base + '?action=' + action;
+    }
+  }
 
-  var appConfig = Object.assign({}, DEFAULT_APP_CONFIG, window.APP_CONFIG || {});
-  window.APP_CONFIG = appConfig;
-
-  var base = {
+  var defaults = {
     SHEET_ID: "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc",
     SHEET_NAME: "FAQ",
     REQUIRED_HEADERS: ["カテゴリ","質問","回答","公開フラグ"],
     HP_LINK: "https://waseaca-singapore.com/",
     HOME_URL: "https://waseaca-singapore.com/",
-    AI_ENDPOINT: appConfig.AI_PROXY_ENDPOINT || "/api/chat",
-    APPS_SCRIPT_ENDPOINT: appConfig.APPS_SCRIPT_ENDPOINT
+    AI_ENDPOINT: "/api/chat",
+    APPS_SCRIPT_ENDPOINT: "https://script.google.com/macros/s/AKfycbyUZY5vcrm8lQatRzyUBqHNZTZtpWZtbf6kHUKxI9X4grHns2LZp5x33xMyA2FzYFU/exec"
   };
 
-  // 既存設定があればマージする（後勝ち）。
-  window.CONFIG = Object.assign({}, base, window.CONFIG || {});
+  var legacy = window.CONFIG || window.APP_CONFIG || {};
+  var config = Object.assign({}, defaults, legacy);
 
-  if (!window.CONFIG.AI_ENDPOINT) {
-    window.CONFIG.AI_ENDPOINT = appConfig.AI_PROXY_ENDPOINT || "/api/chat";
+  if (!config.AI_ENDPOINT && config.AI_PROXY_ENDPOINT) {
+    config.AI_ENDPOINT = config.AI_PROXY_ENDPOINT;
   }
 
-  if (!window.CONFIG.APPS_SCRIPT_ENDPOINT) {
-    window.CONFIG.APPS_SCRIPT_ENDPOINT = appConfig.APPS_SCRIPT_ENDPOINT || '';
+  if (!config.CONTACT_ENDPOINT && config.APPS_SCRIPT_ENDPOINT) {
+    config.CONTACT_ENDPOINT = appendAction(config.APPS_SCRIPT_ENDPOINT, 'contact');
   }
 
-  // FAQ画面用の互換エイリアスを生成。必要項目のみ抜き出しておく。
+  if (!config.AI_PROXY_ENDPOINT && config.APPS_SCRIPT_ENDPOINT) {
+    config.AI_PROXY_ENDPOINT = appendAction(config.APPS_SCRIPT_ENDPOINT, 'ai');
+  }
+
+  window.CONFIG = config;
+  window.APP_CONFIG = config;
+
   window.FAQ_CONFIG = Object.assign({
-    SHEET_ID: window.CONFIG.SHEET_ID,
-    SHEET_NAME: window.CONFIG.SHEET_NAME,
-    REQUIRED_HEADERS: window.CONFIG.REQUIRED_HEADERS,
-    HOME_URL: window.CONFIG.HOME_URL || window.CONFIG.HP_LINK,
-    AI_ENDPOINT: window.CONFIG.AI_ENDPOINT,
+    SHEET_ID: config.SHEET_ID,
+    SHEET_NAME: config.SHEET_NAME,
+    REQUIRED_HEADERS: config.REQUIRED_HEADERS,
+    HOME_URL: config.HOME_URL || config.HP_LINK,
+    AI_ENDPOINT: config.AI_ENDPOINT,
   }, window.FAQ_CONFIG || {});
 })();
