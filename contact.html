@@ -92,25 +92,58 @@
 
   <div class="site-footer">© 早稲田アカデミーシンガポール校 / Waseda Academy Singapore.</div>
 
+  <script src="assets/config.js"></script>
   <script src="assets/ai.js"></script>
   <script>
     (async function(){
-      const endpoint = window.CONFIG?.APPS_SCRIPT_ENDPOINT || window.APPS_SCRIPT_ENDPOINT;
-      const postEndpoint = endpoint
-        ? `${endpoint}${endpoint.includes('?') ? '&' : '?'}action=contact`
-        : '';
+      function resolveBase(endpoint){
+        if (!endpoint) return '';
+        try{
+          const url = new URL(endpoint, window.location.href);
+          url.search = '';
+          url.hash = '';
+          return url.toString();
+        }catch(_){
+          const idx = String(endpoint).indexOf('?');
+          return idx >= 0 ? String(endpoint).slice(0, idx) : String(endpoint);
+        }
+      }
+
+      const updateAppConfig = (next)=>{
+        const current = window.APP_CONFIG || {};
+        const merged = Object.assign(current, next || {});
+        window.APP_CONFIG = merged;
+        return merged;
+      };
+
+      let appConfig = updateAppConfig();
+      let postEndpoint = (appConfig.CONTACT_ENDPOINT || '').trim();
+      let endpoint = resolveBase(postEndpoint || appConfig.APPS_SCRIPT_ENDPOINT || '');
       const btn  = document.getElementById('inqSend');
       const note = document.getElementById('inqNote');
+      const form = document.getElementById('inqForm');
       if(!btn){ return; }
 
       try{
         if (endpoint){
           const r = await fetch(endpoint);
           const j = await r.json();
-          if (j?.config?.CONTACT_EMAIL){
-            note.textContent = `送信先: ${j.config.CONTACT_EMAIL}（送信内容は自動記録されます）`;
-          } else {
-            note.textContent = '送信内容は担当へ共有されます。';
+          if (j?.config){
+            const remoteBase = resolveBase(j.config.APPS_SCRIPT_ENDPOINT || j.config.contactEndpoint || '');
+            if (remoteBase){
+              appConfig = updateAppConfig({
+                APPS_SCRIPT_ENDPOINT: remoteBase,
+                CONTACT_ENDPOINT: remoteBase + '?action=contact',
+                AI_PROXY_ENDPOINT: remoteBase + '?action=ai'
+              });
+              postEndpoint = (appConfig.CONTACT_ENDPOINT || '').trim();
+              endpoint = resolveBase(postEndpoint || appConfig.APPS_SCRIPT_ENDPOINT || '');
+            }
+            if (j.config.CONTACT_EMAIL){
+              note.textContent = `送信先: ${j.config.CONTACT_EMAIL}（送信内容は自動記録されます）`;
+            } else {
+              note.textContent = '送信内容は担当へ共有されます。';
+            }
           }
         }
       }catch{}
@@ -122,18 +155,29 @@
           category:  document.getElementById('inqCat').value.trim(),
           message:   document.getElementById('inqMsg').value.trim(),
         };
-        if (!postEndpoint){ note.textContent = '送信先が未設定です（APPS_SCRIPT_ENDPOINT）。'; return; }
+        if (!postEndpoint){ note.textContent = '送信先が未設定です（APP_CONFIG.CONTACT_ENDPOINT）。'; return; }
         if (!data.message){ note.textContent = 'お問い合わせ内容を入力してください。'; return; }
 
         try{
           const res = await fetch(postEndpoint, {
-            method:'POST', headers:{'Content-Type':'application/json'},
+            method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
             body: JSON.stringify(data)
           });
           const j = await res.json();
-          if (j.ok){ note.textContent = '送信しました。担当より返信いたします。'; document.getElementById('inqForm').reset(); }
-          else { note.textContent = '送信に失敗しました。時間をおいて再試行してください。'; }
-        }catch{ note.textContent = '送信に失敗しました（通信エラー）。'; }
+          if (j.ok){
+            note.textContent = j.mailSent
+              ? '送信しました。担当へメール通知を行いました。'
+              : '送信しました。担当より返信いたします。';
+            if (form) form.reset();
+          }
+          else {
+            note.textContent = j.error
+              ? `送信に失敗しました: ${j.error}`
+              : '送信に失敗しました。時間をおいて再試行してください。';
+          }
+        }catch{
+          note.textContent = '送信に失敗しました（通信エラー）。';
+        }
       });
     })();
   </script>

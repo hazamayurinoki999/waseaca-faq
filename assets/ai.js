@@ -1,7 +1,8 @@
 (function(){
   var history = [];
   var chatBox, input, send, reminder;
-  var endpoint = (window.FAQ_CONFIG && window.FAQ_CONFIG.AI_ENDPOINT)
+  var endpoint = (window.APP_CONFIG && window.APP_CONFIG.AI_PROXY_ENDPOINT)
+    || (window.FAQ_CONFIG && window.FAQ_CONFIG.AI_ENDPOINT)
     || (window.CONFIG && window.CONFIG.AI_ENDPOINT)
     || '/api/chat';
 
