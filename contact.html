@@ -95,58 +95,92 @@
   <script src="assets/config.js"></script>
   <script src="assets/ai.js"></script>
   <script>
-    (async function(){
-      function resolveBase(endpoint){
-        if (!endpoint) return '';
-        try{
-          const url = new URL(endpoint, window.location.href);
-          url.search = '';
-          url.hash = '';
-          return url.toString();
-        }catch(_){
-          const idx = String(endpoint).indexOf('?');
-          return idx >= 0 ? String(endpoint).slice(0, idx) : String(endpoint);
-        }
-      }
-
-      const updateAppConfig = (next)=>{
-        const current = window.APP_CONFIG || {};
-        const merged = Object.assign(current, next || {});
-        window.APP_CONFIG = merged;
-        return merged;
-      };
-
-      let appConfig = updateAppConfig();
-      let postEndpoint = (appConfig.CONTACT_ENDPOINT || '').trim();
-      let endpoint = resolveBase(postEndpoint || appConfig.APPS_SCRIPT_ENDPOINT || '');
+    (function(){
       const btn  = document.getElementById('inqSend');
       const note = document.getElementById('inqNote');
       const form = document.getElementById('inqForm');
       if(!btn){ return; }
 
-      try{
-        if (endpoint){
-          const r = await fetch(endpoint);
-          const j = await r.json();
-          if (j?.config){
-            const remoteBase = resolveBase(j.config.APPS_SCRIPT_ENDPOINT || j.config.contactEndpoint || '');
-            if (remoteBase){
-              appConfig = updateAppConfig({
-                APPS_SCRIPT_ENDPOINT: remoteBase,
-                CONTACT_ENDPOINT: remoteBase + '?action=contact',
-                AI_PROXY_ENDPOINT: remoteBase + '?action=ai'
-              });
-              postEndpoint = (appConfig.CONTACT_ENDPOINT || '').trim();
-              endpoint = resolveBase(postEndpoint || appConfig.APPS_SCRIPT_ENDPOINT || '');
-            }
-            if (j.config.CONTACT_EMAIL){
-              note.textContent = `送信先: ${j.config.CONTACT_EMAIL}（送信内容は自動記録されます）`;
-            } else {
-              note.textContent = '送信内容は担当へ共有されます。';
-            }
+      const appConfig = window.APP_CONFIG || (window.APP_CONFIG = {});
+
+      const normaliseBase = (endpoint)=>{
+        if (!endpoint) return '';
+        const value = String(endpoint).trim();
+        if (!value) return '';
+        try{
+          const url = new URL(value, window.location.href);
+          url.search = '';
+          url.hash = '';
+          return url.toString();
+        }catch(_){
+          const idx = value.indexOf('?');
+          return idx >= 0 ? value.slice(0, idx) : value;
+        }
+      };
+
+      const buildContactEndpoint = (base)=>{
+        if (!base) return '';
+        return base.includes('?') ? `${base}&action=contact` : `${base}?action=contact`;
+      };
+
+      const buildAiEndpoint = (base)=>{
+        if (!base) return '';
+        return base.includes('?') ? `${base}&action=ai` : `${base}?action=ai`;
+      };
+
+      let baseEndpoint = '';
+      let postEndpoint = '';
+
+      const applyBaseEndpoint = (candidate)=>{
+        const base = normaliseBase(candidate);
+        if (!base) return false;
+        baseEndpoint = base;
+        postEndpoint = buildContactEndpoint(base);
+        const aiEndpoint = buildAiEndpoint(base);
+        Object.assign(appConfig, {
+          APPS_SCRIPT_ENDPOINT: base,
+          CONTACT_ENDPOINT: postEndpoint,
+          AI_PROXY_ENDPOINT: aiEndpoint || appConfig.AI_PROXY_ENDPOINT
+        });
+        if (window.CONFIG){
+          window.CONFIG.APPS_SCRIPT_ENDPOINT = base;
+          if (!window.CONFIG.AI_ENDPOINT || window.CONFIG.AI_ENDPOINT === '/api/chat'){
+            window.CONFIG.AI_ENDPOINT = aiEndpoint || window.CONFIG.AI_ENDPOINT;
           }
         }
-      }catch{}
+        return true;
+      };
+
+      const initialCandidates = [
+        appConfig.CONTACT_ENDPOINT,
+        appConfig.APPS_SCRIPT_ENDPOINT,
+        window.CONFIG && window.CONFIG.APPS_SCRIPT_ENDPOINT,
+        window.APPS_SCRIPT_ENDPOINT
+      ];
+
+      for (let i = 0; i < initialCandidates.length && !baseEndpoint; i++){
+        applyBaseEndpoint(initialCandidates[i]);
+      }
+
+      note.textContent = '送信内容は担当へ共有されます。';
+
+      const fetchRemoteConfig = async ()=>{
+        if (!baseEndpoint) return;
+        try{
+          const response = await fetch(baseEndpoint);
+          if (!response.ok) return;
+          const payload = await response.json();
+          const remoteConfig = payload?.config || {};
+          if (remoteConfig.APPS_SCRIPT_ENDPOINT){
+            applyBaseEndpoint(remoteConfig.APPS_SCRIPT_ENDPOINT);
+          }
+          if (remoteConfig.CONTACT_EMAIL){
+            note.textContent = `送信先: ${remoteConfig.CONTACT_EMAIL}（送信内容は自動記録されます）`;
+          }
+        }catch(_){ /* noop */ }
+      };
+
+      fetchRemoteConfig();
 
       btn.addEventListener('click', async ()=>{
         const data = {
@@ -155,12 +189,19 @@
           category:  document.getElementById('inqCat').value.trim(),
           message:   document.getElementById('inqMsg').value.trim(),
         };
-        if (!postEndpoint){ note.textContent = '送信先が未設定です（APP_CONFIG.CONTACT_ENDPOINT）。'; return; }
-        if (!data.message){ note.textContent = 'お問い合わせ内容を入力してください。'; return; }
+        if (!postEndpoint){
+          note.textContent = '送信先が未設定です（APPS_SCRIPT_ENDPOINT）。';
+          return;
+        }
+        if (!data.message){
+          note.textContent = 'お問い合わせ内容を入力してください。';
+          return;
+        }
 
         try{
           const res = await fetch(postEndpoint, {
-            method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+            method:'POST',
+            headers:{'Content-Type':'text/plain;charset=utf-8'},
             body: JSON.stringify(data)
           });
           const j = await res.json();
@@ -169,13 +210,12 @@
               ? '送信しました。担当へメール通知を行いました。'
               : '送信しました。担当より返信いたします。';
             if (form) form.reset();
-          }
-          else {
+          } else {
             note.textContent = j.error
               ? `送信に失敗しました: ${j.error}`
               : '送信に失敗しました。時間をおいて再試行してください。';
           }
-        }catch{
+        }catch(_){
           note.textContent = '送信に失敗しました（通信エラー）。';
         }
       });

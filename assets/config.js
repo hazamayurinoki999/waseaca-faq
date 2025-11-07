@@ -3,47 +3,12 @@
  * これによりマージ時に発生していた "CONFIG" と "FAQ_CONFIG" の重複定義/参照の不整合を解消する。
  */
 (function(){
-  var DEFAULT_BASE_ENDPOINT = "https://script.google.com/macros/s/AKfycbyUZY5vcrm8lQatRzyUBqHNZTZtpWZtbf6kHUKxI9X4grHns2LZp5x33xMyA2FzYFU/exec";
   var DEFAULT_APP_CONFIG = {
-    APPS_SCRIPT_ENDPOINT: DEFAULT_BASE_ENDPOINT,
-    CONTACT_ENDPOINT: DEFAULT_BASE_ENDPOINT + "?action=contact",
-    AI_PROXY_ENDPOINT: DEFAULT_BASE_ENDPOINT + "?action=ai"
+    APPS_SCRIPT_ENDPOINT: "https://script.google.com/macros/s/AKfycbyUZY5vcrm8lQatRzyUBqHNZTZtpWZtbf6kHUKxI9X4grHns2LZp5x33xMyA2FzYFU/exec"
   };
 
   var appConfig = Object.assign({}, DEFAULT_APP_CONFIG, window.APP_CONFIG || {});
   window.APP_CONFIG = appConfig;
-
-  function resolveBaseEndpoint(endpoint){
-    if (!endpoint) return '';
-    try {
-      var parsed = new URL(endpoint, window.location.origin);
-      parsed.search = '';
-      parsed.hash = '';
-      return parsed.toString();
-    } catch (_) {
-      var idx = String(endpoint).indexOf('?');
-      return idx >= 0 ? String(endpoint).slice(0, idx) : String(endpoint);
-    }
-  }
-
-  var baseEndpoint = resolveBaseEndpoint(
-    appConfig.APPS_SCRIPT_ENDPOINT
-      || appConfig.CONTACT_ENDPOINT
-      || appConfig.AI_PROXY_ENDPOINT
-  );
-
-  if (baseEndpoint){
-    appConfig.APPS_SCRIPT_ENDPOINT = baseEndpoint;
-
-    if (!appConfig.CONTACT_ENDPOINT){
-      appConfig.CONTACT_ENDPOINT = baseEndpoint + '?action=contact';
-    }
-    if (!appConfig.AI_PROXY_ENDPOINT){
-      appConfig.AI_PROXY_ENDPOINT = baseEndpoint + '?action=ai';
-    }
-  }
-
-  baseEndpoint = resolveBaseEndpoint(appConfig.CONTACT_ENDPOINT);
 
   var base = {
     SHEET_ID: "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc",
@@ -52,17 +17,18 @@
     HP_LINK: "https://waseaca-singapore.com/",
     HOME_URL: "https://waseaca-singapore.com/",
     AI_ENDPOINT: appConfig.AI_PROXY_ENDPOINT || "/api/chat",
-    APPS_SCRIPT_ENDPOINT: baseEndpoint
+    APPS_SCRIPT_ENDPOINT: appConfig.APPS_SCRIPT_ENDPOINT
   };
 
   // 既存設定があればマージする（後勝ち）。
   window.CONFIG = Object.assign({}, base, window.CONFIG || {});
 
-  if (!window.CONFIG.APPS_SCRIPT_ENDPOINT) {
-    window.CONFIG.APPS_SCRIPT_ENDPOINT = baseEndpoint;
-  }
   if (!window.CONFIG.AI_ENDPOINT) {
     window.CONFIG.AI_ENDPOINT = appConfig.AI_PROXY_ENDPOINT || "/api/chat";
+  }
+
+  if (!window.CONFIG.APPS_SCRIPT_ENDPOINT) {
+    window.CONFIG.APPS_SCRIPT_ENDPOINT = appConfig.APPS_SCRIPT_ENDPOINT || '';
   }
 
   // FAQ画面用の互換エイリアスを生成。必要項目のみ抜き出しておく。
