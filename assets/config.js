@@ -3,9 +3,11 @@
  * これによりマージ時に発生していた "CONFIG" と "FAQ_CONFIG" の重複定義/参照の不整合を解消する。
  */
 (function(){
+  var DEFAULT_BASE_ENDPOINT = "https://script.google.com/macros/s/AKfycbyUZY5vcrm8lQatRzyUBqHNZTZtpWZtbf6kHUKxI9X4grHns2LZp5x33xMyA2FzYFU/exec";
   var DEFAULT_APP_CONFIG = {
-    CONTACT_ENDPOINT: "https://script.google.com/macros/s/AKfycbx5PFY-yguMbQ3IrGYneJ86894RQAPQoZUQNDBoaxaJcfzSfYwPO0N0KVwT-UlTFwQ/exec?action=contact",
-    AI_PROXY_ENDPOINT: "https://script.google.com/macros/s/AKfycbx5PFY-yguMbQ3IrGYneJ86894RQAPQoZUQNDBoaxaJcfzSfYwPO0N0KVwT-UlTFwQ/exec?action=ai"
+    APPS_SCRIPT_ENDPOINT: DEFAULT_BASE_ENDPOINT,
+    CONTACT_ENDPOINT: DEFAULT_BASE_ENDPOINT + "?action=contact",
+    AI_PROXY_ENDPOINT: DEFAULT_BASE_ENDPOINT + "?action=ai"
   };
 
   var appConfig = Object.assign({}, DEFAULT_APP_CONFIG, window.APP_CONFIG || {});
