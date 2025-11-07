@@ -10,7 +10,7 @@
     HP_LINK: "https://waseaca-singapore.com/",
     HOME_URL: "https://waseaca-singapore.com/",
     AI_ENDPOINT: "/api/chat",
-    APPS_SCRIPT_ENDPOINT: "https://script.google.com/macros/s/AKfycbyfNdiqxZ-KAPHcJ_xyJSQS9woMT7am7daGjMC62X0o9EiXx8VZGjQQ2KragJVoWQ/exec",
+    APPS_SCRIPT_ENDPOINT: "https://script.google.com/macros/s/AKfycbx5PFY-yguMbQ3IrGYneJ86894RQAPQoZUQNDBoaxaJcfzSfYwPO0N0KVwT-UlTFwQ/exec",
   };
 
   // 既存設定があればマージする（後勝ち）。
