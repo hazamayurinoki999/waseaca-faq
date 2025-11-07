@@ -96,6 +96,9 @@
   <script>
     (async function(){
       const endpoint = window.CONFIG?.APPS_SCRIPT_ENDPOINT || window.APPS_SCRIPT_ENDPOINT;
+      const postEndpoint = endpoint
+        ? `${endpoint}${endpoint.includes('?') ? '&' : '?'}action=contact`
+        : '';
       const btn  = document.getElementById('inqSend');
       const note = document.getElementById('inqNote');
       if(!btn){ return; }
@@ -106,6 +109,8 @@
           const j = await r.json();
           if (j?.config?.CONTACT_EMAIL){
             note.textContent = `送信先: ${j.config.CONTACT_EMAIL}（送信内容は自動記録されます）`;
+          } else {
+            note.textContent = '送信内容は担当へ共有されます。';
           }
         }
       }catch{}
@@ -117,11 +122,11 @@
           category:  document.getElementById('inqCat').value.trim(),
           message:   document.getElementById('inqMsg').value.trim(),
         };
-        if (!endpoint){ note.textContent = '送信先が未設定です（APPS_SCRIPT_ENDPOINT）。'; return; }
+        if (!postEndpoint){ note.textContent = '送信先が未設定です（APPS_SCRIPT_ENDPOINT）。'; return; }
         if (!data.message){ note.textContent = 'お問い合わせ内容を入力してください。'; return; }
 
         try{
-          const res = await fetch(endpoint, {
+          const res = await fetch(postEndpoint, {
             method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify(data)
           });
