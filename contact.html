@@ -99,96 +99,102 @@
       const btn  = document.getElementById('inqSend');
       const note = document.getElementById('inqNote');
       const form = document.getElementById('inqForm');
-      if(!btn){ return; }
+      if (!btn || !note) return;
 
-      const globalConfig = window.CONFIG || (window.CONFIG = {});
+      const config = window.APP_CONFIG || window.CONFIG || (window.CONFIG = {});
       if (!window.APP_CONFIG) {
-        window.APP_CONFIG = globalConfig;
+        window.APP_CONFIG = config;
       }
 
-      const normaliseBase = (endpoint)=>{
-        if (!endpoint) return '';
-        const value = String(endpoint).trim();
+      const trimToBase = (value)=>{
         if (!value) return '';
-        try{
-          const url = new URL(value, window.location.href);
-          url.search = '';
+        const raw = String(value).trim();
+        if (!raw) return '';
+        try {
+          const url = new URL(raw, window.location.href);
           url.hash = '';
+          url.search = '';
           return url.toString();
-        }catch(_){
-          const idx = value.indexOf('?');
-          return idx >= 0 ? value.slice(0, idx) : value;
+        } catch (_err) {
+          const idx = raw.indexOf('?');
+          return idx >= 0 ? raw.slice(0, idx) : raw;
         }
       };
 
-      const buildActionEndpoint = (base, action)=>{
+      const withAction = (base, action)=>{
         if (!base) return '';
-        try{
+        try {
           const url = new URL(base, window.location.href);
           url.hash = '';
           url.searchParams.set('action', action);
           return url.toString();
-        }catch(_){
+        } catch (_err) {
           const idx = base.indexOf('?');
           const clean = idx >= 0 ? base.slice(0, idx) : base;
-          return `${clean}?action=${action}`;
+          return clean + '?action=' + action;
         }
       };
 
       const state = {
-        baseEndpoint: '',
-        contactEndpoint: ''
+        base: '',
+        contact: ''
       };
 
-      const applyEndpointCandidate = (candidate)=>{
-        const base = normaliseBase(candidate);
+      const adoptEndpoint = (candidate)=>{
+        const base = trimToBase(candidate);
         if (!base) return false;
-        state.baseEndpoint = base;
-        state.contactEndpoint = buildActionEndpoint(base, 'contact');
-        globalConfig.APPS_SCRIPT_ENDPOINT = base;
-        globalConfig.CONTACT_ENDPOINT = state.contactEndpoint;
-        if (!globalConfig.AI_PROXY_ENDPOINT || globalConfig.AI_PROXY_ENDPOINT === '/api/chat'){
-          const aiEndpoint = buildActionEndpoint(base, 'ai');
-          globalConfig.AI_PROXY_ENDPOINT = aiEndpoint;
-          if (!globalConfig.AI_ENDPOINT || globalConfig.AI_ENDPOINT === '/api/chat'){
-            globalConfig.AI_ENDPOINT = aiEndpoint;
+        state.base = base;
+        state.contact = withAction(base, 'contact');
+        config.APPS_SCRIPT_ENDPOINT = base;
+        config.CONTACT_ENDPOINT = state.contact;
+        if (!config.AI_PROXY_ENDPOINT || config.AI_PROXY_ENDPOINT === '/api/chat'){
+          const ai = withAction(base, 'ai');
+          config.AI_PROXY_ENDPOINT = ai;
+          if (!config.AI_ENDPOINT || config.AI_ENDPOINT === '/api/chat'){
+            config.AI_ENDPOINT = ai;
           }
+        }
+        if (state.contact){
+          note.textContent = '送信内容は担当へ共有されます。';
         }
         return true;
       };
 
-      const initialCandidates = [
-        globalConfig.CONTACT_ENDPOINT,
-        globalConfig.APPS_SCRIPT_ENDPOINT,
-        window.APP_CONFIG && (window.APP_CONFIG.CONTACT_ENDPOINT || window.APP_CONFIG.APPS_SCRIPT_ENDPOINT),
-        window.FAQ_CONFIG && window.FAQ_CONFIG.CONTACT_ENDPOINT,
-        window.APPS_SCRIPT_ENDPOINT
+      const candidates = [
+        config.CONTACT_ENDPOINT,
+        config.APPS_SCRIPT_ENDPOINT,
+        window.APPS_SCRIPT_ENDPOINT,
+        window.FAQ_CONFIG && window.FAQ_CONFIG.CONTACT_ENDPOINT
       ];
-
-      for (let i = 0; i < initialCandidates.length && !state.baseEndpoint; i++){
-        applyEndpointCandidate(initialCandidates[i]);
+      for (let i = 0; i < candidates.length && !state.base; i++){
+        adoptEndpoint(candidates[i]);
       }
 
-      note.textContent = state.contactEndpoint
+      note.textContent = state.contact
         ? '送信内容は担当へ共有されます。'
         : '送信先を確認しています…';
 
       const fetchRemoteConfig = async ()=>{
-        if (!state.baseEndpoint) return;
-        try{
-          const response = await fetch(state.baseEndpoint);
-          if (!response.ok) return;
-          const payload = await response.json();
-          const remoteConfig = payload && payload.config ? payload.config : {};
-          if (remoteConfig.CONTACT_ENDPOINT){
-            applyEndpointCandidate(remoteConfig.CONTACT_ENDPOINT);
-          } else if (remoteConfig.APPS_SCRIPT_ENDPOINT){
-            applyEndpointCandidate(remoteConfig.APPS_SCRIPT_ENDPOINT);
+        if (!state.base) return;
+        try {
+          const res = await fetch(state.base);
+          if (!res.ok) return;
+          const payload = await res.json();
+          const remote = payload && payload.config ? payload.config : {};
+          if (remote.CONTACT_ENDPOINT){
+            adoptEndpoint(remote.CONTACT_ENDPOINT);
           }
-          if (state.contactEndpoint){
+          if (remote.APPS_SCRIPT_ENDPOINT){
+            adoptEndpoint(remote.APPS_SCRIPT_ENDPOINT);
+          }
+          if (remote.CONTACT_EMAIL){
+            note.textContent = `送信先: ${remote.CONTACT_EMAIL}（送信内容は自動記録されます）`;
+          } else if (state.contact){
             note.textContent = '送信内容は担当へ共有されます。';
           }
-        }catch(_){ /* noop */ }
+        } catch (_err) {
+          // 失敗してもフォーム送信は継続できるため握りつぶす
+        }
       };
 
       fetchRemoteConfig();
@@ -200,7 +206,7 @@
           category:  document.getElementById('inqCat').value.trim(),
           message:   document.getElementById('inqMsg').value.trim(),
         };
-        if (!state.contactEndpoint){
+        if (!state.contact){
           note.textContent = '送信先が未設定です（APPS_SCRIPT_ENDPOINT）。';
           return;
         }
@@ -209,24 +215,24 @@
           return;
         }
 
-        try{
-          const res = await fetch(state.contactEndpoint, {
-            method:'POST',
-            headers:{'Content-Type':'text/plain;charset=utf-8'},
+        try {
+          const res = await fetch(state.contact, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(data)
           });
-          const j = await res.json();
-          if (j.ok){
-            note.textContent = j.mailSent
+          const result = await res.json();
+          if (result && result.ok){
+            note.textContent = result.mailSent
               ? '送信しました。担当へメール通知を行いました。'
               : '送信しました。担当より返信いたします。';
             if (form) form.reset();
           } else {
-            note.textContent = j.error
-              ? `送信に失敗しました: ${j.error}`
+            note.textContent = result && result.error
+              ? `送信に失敗しました: ${result.error}`
               : '送信に失敗しました。時間をおいて再試行してください。';
           }
-        }catch(_){
+        } catch (_err) {
           note.textContent = '送信に失敗しました（通信エラー）。';
         }
       });
