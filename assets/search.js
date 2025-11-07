@@ -29,7 +29,7 @@
     box.innerHTML=''; box.appendChild(frag);
   }
   document.addEventListener('DOMContentLoaded', function(){
-    FAQ.loadFAQ(FAQ_CONFIG).then(function(items){ ALL=items; }).catch(function(e){
+    FAQ.loadFAQ(window.FAQ_CONFIG || window.CONFIG || {}).then(function(items){ ALL=items; }).catch(function(e){
       document.getElementById('kwResults').innerHTML='<div class="alert">'+FAQ.escapeHtml(e.message||String(e))+'</div>';
     });
     var input=document.getElementById('kwInput'); var btn=document.getElementById('kwRun');

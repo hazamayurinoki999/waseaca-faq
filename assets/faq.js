@@ -68,7 +68,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     var si = document.getElementById('searchInput'); if (si) si.addEventListener('input', render);
-    FAQ.loadFAQ(FAQ_CONFIG).then(function (items) {
+    FAQ.loadFAQ(window.FAQ_CONFIG || window.CONFIG || {}).then(function (items) {
       ALL = items;
       var cats = Array.from(new Set(ALL.map(function (it) { return String(it.category || 'その他'); }))).sort(function (a, b) { return a.localeCompare(b, 'ja'); });
       var wrap = document.getElementById('categoryPills'); wrap.innerHTML = '';
