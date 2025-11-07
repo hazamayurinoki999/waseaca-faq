@@ -5,7 +5,9 @@
     SHEET_NAME: "FAQ",
     HOME_URL: "https://waseaca-singapore.com/",
     AI_ENDPOINT: "/api/chat",
-    BASE_PATH: ""
+    BASE_PATH: "",
+    FAQ_JSON_URL: "",
+    PAGE_MAP: null
   };
   var existing = (window.FAQ_CONFIG && typeof window.FAQ_CONFIG === 'object') ? window.FAQ_CONFIG : {};
   window.FAQ_CONFIG = Object.assign({}, defaults, existing);

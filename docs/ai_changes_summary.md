@@ -24,8 +24,9 @@
 - **assets/app.css**
   - チャットバブルや参照FAQリストのスタイルを微調整しました。
 - **assets/config.js / assets/common.js**
-  - 既定値に `AI_ENDPOINT` と `BASE_PATH` を含め、Apps Script など外部から `window.FAQ_CONFIG` を上書きできるようにしました。
-  - `BASE_PATH` を使っても画面遷移が壊れないように、`FAQ.resolvePath` ユーティリティを追加しました。
+  - 既定値に `AI_ENDPOINT` や `BASE_PATH` に加えて `FAQ_JSON_URL` / `PAGE_MAP` を設け、Apps Script など外部から `window.FAQ_CONFIG` を柔軟に上書きできるようにしました。
+  - `BASE_PATH` と `PAGE_MAP` を併用しても画面遷移が壊れないように、`FAQ.resolvePath` を強化し、任意のベースURLやクエリ形式でも動作するようにしています。
+  - Googleシートが使えない環境でも FAQ JSON/API を直接読み込めるように `FAQ.loadFAQ` にフォールバック経路を追加しました。
 
 ## 3. 設定・ドキュメント
 

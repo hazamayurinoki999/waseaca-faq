@@ -61,8 +61,28 @@
 | `HOME_URL` | 「ホームへ」ボタンがリンクするURL。 |
 | `AI_ENDPOINT` | AIチャットが問い合わせるAPIエンドポイント。Apps Script や Cloud Functions を使う場合はここにURLを設定します。 |
 | `BASE_PATH` | ページ遷移時に付与するパスのプレフィックス。`/faq/` や `https://example.com/faq` のように設定すると、サブディレクトリ配信やApps Scriptホストでも画面遷移が壊れにくくなります。 |
+| `FAQ_JSON_URL` | Googleシートではなく任意のJSON/APIからFAQを取得したい場合に指定します。相対パスでもOKです（例：`/api/faq`）。 |
+| `PAGE_MAP` | 画面遷移先を個別に上書きするためのマップ。`{ "faq.html": "?page=faq" }` のように設定すると、Apps Scriptのクエリ形式などにも対応できます。 |
 
 `BASE_PATH` は `index.html` のカード遷移や各ページのナビゲーションリンクにも自動的に反映されます。相対パスで運用している場合（例: Apps Scriptの `/exec` URL）に設定すると、ページ遷移の不具合を防げます。
+
+`FAQ_JSON_URL` を指定すると、Googleスプレッドシートではなく任意のAPI/JSONレスポンスからFAQを読み込みます。レスポンスは `[ { "category": "...", "question": "...", "answer": "...", "public": true } ]` といった配列、もしくは `items`/`data` 配列を含むオブジェクトであれば利用できます。
+
+`PAGE_MAP` は `data-nav` やトップページのカードに設定されているファイル名をキーに、任意の遷移先へ差し替える仕組みです。Google Apps Script のように単一の `/exec` URL へ `?page=faq` を付けて切り替える場合は以下のように設定します。
+
+```html
+<script>
+  window.FAQ_CONFIG = {
+    BASE_PATH: 'https://script.google.com/macros/s/XXXXX/exec',
+    PAGE_MAP: {
+      'index.html': '',
+      'faq.html': '?page=faq',
+      'search.html': '?page=search',
+      'ai.html': '?page=ai'
+    }
+  };
+</script>
+```
 
 ## 仕組みの全体像
 
