@@ -53,7 +53,7 @@
         <a class="btn ghost" href="index.html">入口</a>
         <a class="btn ghost" href="faq.html">カテゴリ検索</a>
         <a class="btn ghost" href="search.html">キーワード検索</a>
-        <a class="btn ghost is-active" aria-current="page" href="contact.html">お問い合わせ</a>
+        <a class="btn ghost" href="ai.html">AI検索</a>
       </nav>
     </div>
   </header>
@@ -61,18 +61,18 @@
   <main class="container">
     <div class="contact-hero">
       <h1>お問い合わせ</h1>
-      <p>FAQや検索を利用しても解決できなかった方は、<a class="inline-link" href="#contact-form">このページで解決しなかった場合</a>の案内をご確認のうえ、以下のフォームよりご相談ください。内容は担当へ迅速に共有されます。</p>
+      <p>FAQや検索を利用しても解決できなかった方は、以下のフォームよりご相談ください。内容は担当に共有されます。しばらく時間が経っても返信が無い場合はお電話にてお問合せも受付ています。</p>
     </div>
 
     <section id="contact-form" class="contact-card">
       <form id="inqForm" class="contact-form" onsubmit="return false;">
         <label class="field" for="inqName">
-          <span class="field-label">お名前（任意）</span>
-          <input id="inqName" placeholder="例：山田 太郎" />
+          <span class="field-label">お名前 <span style="color:var(--brand-orange);font-weight:700">*</span></span>
+          <input id="inqName" type="text" placeholder="例：山田 太郎" required />
         </label>
         <label class="field" for="inqMail">
-          <span class="field-label">メールアドレス（任意）</span>
-          <input id="inqMail" placeholder="example@email.com" inputmode="email" />
+          <span class="field-label">メールアドレス <span style="color:var(--brand-orange);font-weight:700">*</span></span>
+          <input id="inqMail" type="email" placeholder="example@email.com" inputmode="email" required />
         </label>
         <label class="field" for="inqCat">
           <span class="field-label">カテゴリ（任意）</span>
@@ -137,7 +137,12 @@
           message:   document.getElementById('inqMsg').value.trim(),
         };
         if (!postEndpoint){ note.textContent = '送信先が未設定です（APP_CONFIG.CONTACT_ENDPOINT）。'; return; }
-        if (!data.message){ note.textContent = 'お問い合わせ内容を入力してください。'; return; }
+
+        const errors = [];
+        if (!data.fromName){ errors.push('お名前を入力してください。'); }
+        if (!data.fromEmail){ errors.push('メールアドレスを入力してください。'); }
+        if (!data.message){ errors.push('お問い合わせ内容を入力してください。'); }
+        if (errors.length){ note.textContent = errors[0]; return; }
 
         try{
           const res = await fetch(postEndpoint, {
