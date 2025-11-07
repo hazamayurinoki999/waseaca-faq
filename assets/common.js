@@ -30,7 +30,9 @@
   }
 
   function initHomeLinks() {
-    var url = (window.FAQ_CONFIG && FAQ_CONFIG.HOME_URL) || '/';
+    var url = (window.FAQ_CONFIG && window.FAQ_CONFIG.HOME_URL)
+      || (window.CONFIG && (window.CONFIG.HOME_URL || window.CONFIG.HP_LINK))
+      || '/';
     document.querySelectorAll('[data-home]').forEach(function (a) { a.href = url; });
     var sub = document.querySelector('.brand .subtle'); if (sub) sub.classList.add('site-note');
   }

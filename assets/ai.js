@@ -1,7 +1,9 @@
 (function(){
   var history = [];
   var chatBox, input, send, reminder;
-  var endpoint = (window.FAQ_CONFIG && FAQ_CONFIG.AI_ENDPOINT) || '/api/chat';
+  var endpoint = (window.FAQ_CONFIG && window.FAQ_CONFIG.AI_ENDPOINT)
+    || (window.CONFIG && window.CONFIG.AI_ENDPOINT)
+    || '/api/chat';
 
   function scrollToBottom(){
     if (!chatBox) return;
@@ -33,7 +35,9 @@
       var item = document.createElement('li');
       var link = document.createElement('a');
       link.textContent = ref.question || ref.url || 'FAQリンク';
-      link.href = ref.url || (FAQ_CONFIG && FAQ_CONFIG.HOME_URL) || '#';
+      var home = (window.FAQ_CONFIG && window.FAQ_CONFIG.HOME_URL)
+        || (window.CONFIG && (window.CONFIG.HOME_URL || window.CONFIG.HP_LINK));
+      link.href = ref.url || home || '#';
       link.target = '_blank';
       link.rel = 'noopener';
       item.appendChild(link);
