@@ -3,51 +3,96 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>お問い合わせ | FAQセンター</title>
+  <title>FAQセンター | お問い合わせ</title>
   <link rel="stylesheet" href="assets/app.css" />
   <style>
-    .card{max-width:720px;margin:24px auto;padding:20px;border-radius:16px;border:1px solid #eee;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.04)}
-    .row{display:grid;gap:10px}
-    .row input,.row textarea{width:100%}
-    .hero{max-width:720px;margin:24px auto}
+    .contact-hero{max-width:720px;margin:72px auto 32px;text-align:center}
+    .contact-hero h1{margin:0 0 12px;font-size:32px;font-weight:800}
+    .contact-hero p{margin:0 auto;max-width:540px;line-height:1.7;color:var(--muted);font-size:15px}
+    .contact-hero .inline-link{color:var(--brand-blue);text-decoration:none;border-bottom:1px solid rgba(30,102,255,.45);padding-bottom:2px;font-weight:600;transition:color .2s ease, border-color .2s ease, box-shadow .2s ease}
+    .contact-hero .inline-link:hover,.contact-hero .inline-link:focus-visible{color:var(--brand-green);border-color:rgba(0,195,154,.55);box-shadow:0 3px 12px rgba(0,195,154,.24)}
+
+    .contact-card{max-width:700px;margin:0 auto 80px;background:var(--surface);border-radius:24px;padding:36px 40px;border:1px solid var(--border);box-shadow:0 16px 40px rgba(11,18,32,.28)}
+    @media (prefers-color-scheme: light){
+      .contact-card{box-shadow:0 18px 36px rgba(15,28,52,.14)}
+    }
+    .contact-form{display:flex;flex-direction:column;gap:20px}
+    .field{display:flex;flex-direction:column;gap:8px;text-align:left}
+    .field-label{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+    .field input,.field textarea{width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(8,20,34,.55);color:var(--text);font-size:15px;box-shadow:inset 0 2px 6px rgba(0,0,0,.14);transition:border-color .2s ease, box-shadow .2s ease, background .2s ease}
+    @media (prefers-color-scheme: light){
+      .field input,.field textarea{background:rgba(255,255,255,.92);border:1px solid rgba(7,18,46,.12);box-shadow:inset 0 1px 3px rgba(7,18,46,.08)}
+    }
+    .field input:focus,.field textarea:focus{border-color:rgba(30,102,255,.6);box-shadow:0 0 0 3px rgba(30,102,255,.18)}
+    .field textarea{min-height:160px;resize:vertical;line-height:1.6}
+
+    .contact-actions{display:flex;justify-content:flex-end}
+    .contact-actions .btn{min-width:140px;padding:12px 16px;border-radius:14px;font-size:15px;font-weight:700;background:linear-gradient(135deg,var(--brand-blue), var(--brand-green));color:#081422;border:none;box-shadow:0 10px 24px rgba(30,102,255,.24);transition:transform .2s ease, box-shadow .2s ease}
+    .contact-actions .btn:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(30,102,255,.3)}
+
+    .contact-note{margin-top:18px;color:var(--muted);font-size:13px;line-height:1.6;text-align:right}
+    @media (max-width: 640px){
+      .contact-hero{margin-top:48px;padding:0 10px}
+      .contact-card{padding:28px 24px}
+      .contact-actions{justify-content:center}
+      .contact-note{text-align:center}
+    }
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+  <header class="header">
+    <div class="container bar">
       <div class="brand">
-        <div class="title">FAQセンター</div>
-        <div class="subtle">早稲田アカデミーシンガポール校</div>
+        <div class="logo"></div>
+        <div>
+          <div class="title">FAQセンター</div>
+          <div class="subtle">早稲田アカデミーシンガポール校</div>
+        </div>
       </div>
-      <nav class="foot-actions" style="display:flex;gap:8px;">
+      <nav class="foot-actions">
         <a class="btn ghost" href="index.html">入口</a>
         <a class="btn ghost" href="faq.html">カテゴリ検索</a>
         <a class="btn ghost" href="search.html">キーワード検索</a>
+        <a class="btn ghost is-active" aria-current="page" href="contact.html">お問い合わせ</a>
       </nav>
     </div>
   </header>
 
   <main class="container">
-    <div class="hero">
-      <h1 style="margin:0 0 6px">お問い合わせ</h1>
-      <p class="note">該当するFAQが見つからない場合のみご利用ください。送信内容は自動記録され、担当へ通知されます。</p>
+    <div class="contact-hero">
+      <h1>お問い合わせ</h1>
+      <p>FAQや検索を利用しても解決できなかった方は、<a class="inline-link" href="#contact-form">このページで解決しなかった場合</a>の案内をご確認のうえ、以下のフォームよりご相談ください。内容は担当へ迅速に共有されます。</p>
     </div>
 
-    <section class="card">
-      <form id="inqForm" class="row" onsubmit="return false;">
-        <input id="inqName"  placeholder="お名前（任意）" />
-        <input id="inqMail"  placeholder="メールアドレス（任意）" />
-        <input id="inqCat"   placeholder="カテゴリ（任意）" />
-        <textarea id="inqMsg" placeholder="お問い合わせ内容" rows="5" required></textarea>
-        <button id="inqSend" class="btn" type="button">送信</button>
+    <section id="contact-form" class="contact-card">
+      <form id="inqForm" class="contact-form" onsubmit="return false;">
+        <label class="field" for="inqName">
+          <span class="field-label">お名前（任意）</span>
+          <input id="inqName" placeholder="例：山田 太郎" />
+        </label>
+        <label class="field" for="inqMail">
+          <span class="field-label">メールアドレス（任意）</span>
+          <input id="inqMail" placeholder="example@email.com" inputmode="email" />
+        </label>
+        <label class="field" for="inqCat">
+          <span class="field-label">カテゴリ（任意）</span>
+          <input id="inqCat" placeholder="例：入塾手続き" />
+        </label>
+        <label class="field" for="inqMsg">
+          <span class="field-label">お問い合わせ内容 <span style="color:var(--brand-orange);font-weight:700">*</span></span>
+          <textarea id="inqMsg" placeholder="ご状況やご質問内容を詳しくご記入ください。" required></textarea>
+        </label>
+        <div class="contact-actions">
+          <button id="inqSend" class="btn" type="button">送信する</button>
+        </div>
       </form>
-      <p id="inqNote" class="muted" style="margin-top:10px"></p>
+      <p id="inqNote" class="contact-note"></p>
     </section>
   </main>
 
-  <footer class="site-footer">© Waseda Academy Singapore.</footer>
+  <div class="site-footer">© 早稲田アカデミーシンガポール校 / Waseda Academy Singapore.</div>
 
-  <script src="assets/ai.js"></script> <!-- なくても可。読むだけなら未使用 -->
+  <script src="assets/ai.js"></script>
   <script>
     (async function(){
       const endpoint = window.CONFIG?.APPS_SCRIPT_ENDPOINT || window.APPS_SCRIPT_ENDPOINT;
@@ -55,7 +100,6 @@
       const note = document.getElementById('inqNote');
       if(!btn){ return; }
 
-      // 送信先の案内（Configが取れたら表示）
       try{
         if (endpoint){
           const r = await fetch(endpoint);
