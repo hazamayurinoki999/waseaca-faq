@@ -118,11 +118,11 @@
     };
 
     fetch(endpoint, {
-      method: 'POST',
-      // ★プリフライト回避：application/json ではなく text/plain
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    })
+　   method: 'POST',
+    // ← これが超重要：Simple Request にしてプリフライト回避
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  })
       .then(function(res){
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
