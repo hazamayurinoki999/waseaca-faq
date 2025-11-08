@@ -5,7 +5,36 @@
     s = String(s == null ? '' : s);
     return s.replace(/[&<>"']/g, function (m) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]; });
   }
-  function isPublic(v) { return (v === true) || (String(v || '').trim().toUpperCase() === 'TRUE'); }
+  function isPublic(v) {
+    if (v === true) return true;
+    if (v === false || v == null) return false;
+
+    if (typeof v === 'number') {
+      if (Number.isNaN(v)) return false;
+      return v > 0;
+    }
+
+    var raw = String(v || '').trim();
+    if (!raw) return false;
+
+    var normalized = raw.toLowerCase();
+    var normalizedNoSpace = normalized.replace(/\s+/g, '');
+    var upper = raw.toUpperCase();
+
+    var truthy = ['TRUE', 'T', 'YES', 'Y', 'ON', '1'];
+    if (truthy.indexOf(upper) !== -1) return true;
+
+    var truthyJp = ['公開', '公開する', '公開済', '公開済み', '表示', 'はい'];
+    if (truthyJp.indexOf(normalizedNoSpace) !== -1) return true;
+
+    var falsy = ['FALSE', 'F', 'NO', 'N', 'OFF', '0'];
+    if (falsy.indexOf(upper) !== -1) return false;
+
+    var falsyJp = ['非公開', '未公開', '非表示', 'いいえ'];
+    if (falsyJp.indexOf(normalizedNoSpace) !== -1) return false;
+
+    return false;
+  }
   function hueByName(name) { var s = String(name || ''), h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return (h % 360); }
 
   function loadFAQ(cfg) {
