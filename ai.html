@@ -18,26 +18,10 @@
 
 <main class="container">
   <div class="heading">AIで検索（β版）</div>
-  <p class="note">Gemini API とFAQ/ナレッジ/許可リンクを使って回答します。個人情報や学籍番号などは入力しないでください。</p>
+  <p class="note">Gemini API と FAQ / ナレッジ / 許可リンクを順に検索します。個人情報の入力は控えてください。</p>
 
-  <!-- キャラクター＆吹き出し -->
-  <section class="ai-char-wrap">
-    <div class="ai-char">
-      <img id="charImg" alt="AIアシスタント" src="assets/img/char/char_idle.png" width="220" height="220" decoding="async">
-    </div>
-    <div class="ai-balloon" id="charBalloon" aria-live="polite">
-      <div class="ai-balloon-inner" id="charBalloonText">
-        こんにちは！ボクがFAQデータから答えを探すよ。気になることを聞いてね。
-      </div>
-      <div class="ai-indicator" id="charIndicator" hidden>
-        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        <span class="label">検索中…</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- チャット欄 -->
-  <div class="chat" id="chatBox">
+  <!-- チャット（会話は上部に） -->
+  <div class="chat" id="chatBox" aria-live="polite">
     <div class="bubble bot">こんにちは。FAQデータをもとにお答えします。必要に応じて公式サイトもご確認ください。</div>
   </div>
 
@@ -47,9 +31,25 @@
     <button id="aiSend" class="btn">送信</button>
   </div>
 
-  <p class="note" id="aiReminder">AI検索はβ版です。環境により少し時間がかかる場合があります。</p>
+  <p class="note" id="aiReminder">AI検索はβ版です。環境により時間がかかる場合があります。</p>
   <p class="note">解決しない場合は <a href="contact.html">CONTACTページ</a> からお問い合わせください。</p>
 </main>
+
+<!-- 画面右下：キャラクター（大きめ）＋ 漫画風ふきだし（最新の返答だけ） -->
+<div class="ai-floater" id="aiFloater" aria-live="polite">
+  <div class="ai-card">
+    <img id="charImg" alt="AIアシスタント" src="assets/img/char/char_idle.png" width="300" height="300" decoding="async">
+  </div>
+  <div class="ai-balloon" id="charBalloon">
+    <div class="ai-balloon-inner" id="charBalloonText">
+      こんにちは！ボクがFAQから答えを探すよ。気になることを聞いてね。
+    </div>
+    <div class="ai-indicator" id="charIndicator" hidden>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="label">検索中…</span>
+    </div>
+  </div>
+</div>
 
 <div class="site-footer">© 早稲田アカデミーシンガポール校 / Waseda Academy Singapore.</div>
 
