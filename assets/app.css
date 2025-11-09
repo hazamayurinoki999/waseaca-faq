@@ -245,3 +245,74 @@ body{
   .composer{ flex-direction:column; align-items:stretch; }
   .composer .btn{ width:100%; }
 }
+/* ====== AI キャラクター&吹き出し ====== */
+.ai-char-wrap{
+  display:flex; gap:14px; align-items:flex-end; margin:14px 0 10px;
+}
+.ai-char{
+  flex:0 0 auto;
+  width:220px; height:220px;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.ai-char img{
+  width:220px; height:220px; object-fit:contain; image-rendering:auto;
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,.25));
+}
+.ai-balloon{
+  position:relative; flex:1;
+  background: rgba(255,255,255,.85);
+  color:#0a1530;
+  border:1px solid rgba(0,0,0,.1);
+  border-radius:16px;
+  padding:12px 14px 14px;
+  min-height:64px;
+  box-shadow: var(--shadow);
+}
+@media (prefers-color-scheme: dark){
+  .ai-balloon{ background: rgba(20,30,56,.85); color:#eaf1ff; border-color: rgba(255,255,255,.12); }
+}
+.ai-balloon::after{
+  content:""; position:absolute; left:-14px; bottom:16px;
+  width:0; height:0; border:8px solid transparent;
+  border-right-color: currentColor; opacity:.12; filter:blur(2px);
+}
+.ai-balloon::before{
+  content:""; position:absolute; left:-10px; bottom:18px;
+  width:0; height:0; border:8px solid transparent;
+  border-right-color: rgba(255,255,255,.85);
+}
+@media (prefers-color-scheme: dark){
+  .ai-balloon::before{ border-right-color: rgba(20,30,56,.85); }
+}
+.ai-balloon-inner{ white-space:pre-wrap; line-height:1.6; }
+
+/* “検索中”インジケーター */
+.ai-indicator{
+  margin-top:8px; display:flex; align-items:center; gap:8px;
+  font-size:13px; color:var(--muted);
+}
+.ai-indicator .dot{
+  width:6px; height:6px; border-radius:50%; background: var(--brand-blue);
+  display:inline-block; animation: dotJump 1.1s infinite ease-in-out;
+}
+.ai-indicator .dot:nth-child(2){ animation-delay:.15s }
+.ai-indicator .dot:nth-child(3){ animation-delay:.3s }
+@keyframes dotJump{
+  0%,80%,100%{ transform:translateY(0) }
+  40%{ transform:translateY(-6px) }
+}
+
+/* チャットのバブルを漫画風に少し丸く */
+.bubble.bot{
+  border-radius:18px 18px 18px 6px;
+}
+.bubble.me{
+  border-radius:18px 18px 6px 18px;
+}
+
+/* スマホ並び替え */
+@media (max-width:720px){
+  .ai-char-wrap{ align-items:center; }
+  .ai-char{ width:160px; height:160px; }
+  .ai-char img{ width:160px; height:160px; }
+}
