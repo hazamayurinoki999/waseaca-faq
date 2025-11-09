@@ -16,6 +16,7 @@
   var waitTimer = null;
   var talkTimer = null;
   var typingTimer = null;
+  var isSearching = false;
 
   // 画像
   var CHAR = {
@@ -31,7 +32,7 @@
   function appendBubble(role, text){
     var el = document.createElement('div');
     el.className = 'bubble ' + role;
-    el.textContent = text || '';
+    el.textContent = (text || '').replace(/\r?\n/g, '\n');
     chatBox.appendChild(el); scrollToBottom();
     return el;
   }
@@ -57,15 +58,24 @@
 
   function setChar(src){ if (charImg) charImg.src = src || CHAR.idle; }
   function setBalloon(text){ if (balloonText) balloonText.textContent = text || ''; }
-  function showIndicator(show){ if (indicator) indicator.hidden = !show; }
+  function showIndicator(show){
+    if (!indicator) return;
+    indicator.hidden = !show;
+    indicator.setAttribute('aria-hidden', show ? 'false' : 'true');
+  }
   function clearTimers(){
     if (waitTimer){ clearTimeout(waitTimer); waitTimer = null; }
     if (talkTimer){ clearInterval(talkTimer); talkTimer = null; }
     if (typingTimer){ clearInterval(typingTimer); typingTimer = null; }
   }
 
+  function clearSearchTimer(){
+    if (waitTimer){ clearTimeout(waitTimer); waitTimer = null; }
+  }
+
   function startSearchingUI(){
     clearTimers();
+    isSearching = true;
     setChar(CHAR.search);
     setBalloon('ボクが探してくるね、ちょっと待ってて！');
     showIndicator(true);                           // ← 検索時のみ表示
@@ -73,6 +83,12 @@
       setChar(CHAR.wait);
       setBalloon('うーん…もう少しだけ時間をちょうだい！');
     }, 30000);
+  }
+
+  function finishSearchingUI(){
+    isSearching = false;
+    clearSearchTimer();
+    showIndicator(false);
   }
 
   function typewriteToChat(text, onDone){
@@ -98,6 +114,14 @@
     typewriteToChat(fullText, function(){
       clearTimers(); setChar(CHAR.idle);
       if (doneCb) doneCb();
+    });
+  }
+
+  function talkAndApologize(message, afterSpeech){
+    startTalkingUI(message, function(){
+      setChar(CHAR.sorry);
+      setBalloon('ごめんね、うまく見つけられなかった…。');
+      if (afterSpeech) afterSpeech();
     });
   }
 
@@ -132,7 +156,9 @@
 
   function handleError(err){
     console.error('[AI] error:', err);
-    clearTimers(); showIndicator(false);
+    clearTimers();
+    isSearching = false;
+    showIndicator(false);
     setChar(CHAR.sorry);
     setBalloon('ごめん、エラーが出ちゃった…。もう一度ためしてみて！');
     var msg = pendingReferences.length ? buildAnswerFromReferences(pendingReferences)
@@ -159,6 +185,7 @@
     input.value = '';
     appendBubble('me', value);
     pendingReferences = rankByQuery(value, 3);
+    var fallbackRefs = pendingReferences.slice();
     showIndicator(false);                          // 念のためオフ → これからオン
     setChar(CHAR.idle);
 
@@ -173,7 +200,7 @@
     })
     .then(function(res){ if (!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
     .then(function(data){
-      clearTimers(); showIndicator(false);
+      finishSearchingUI();
       var references = Array.isArray(data && data.references) ? data.references : [];
       var raw = extractAnswer(data);
       var finalAnswer = raw;
@@ -181,21 +208,21 @@
       if ((!finalAnswer || !finalAnswer.trim()) && data && data.error){
         finalAnswer = 'AI応答を取得できませんでした: ' + data.error;
       }
-      if ((!finalAnswer || !finalAnswer.trim()) && pendingReferences.length){
-        finalAnswer = buildAnswerFromReferences(pendingReferences);
+      if ((!finalAnswer || !finalAnswer.trim()) && fallbackRefs.length){
+        finalAnswer = buildAnswerFromReferences(fallbackRefs);
       }
 
       if (!finalAnswer || !finalAnswer.trim()){
-        setChar(CHAR.sorry);
-        setBalloon('ごめんね、うまく見つけられなかった…。もう少し詳しく教えてくれる？');
-        appendBubble('bot', '分かりませんでした。公式サイトをご確認いただくか、お問い合わせください。');
-        if (pendingReferences.length) appendReferences(pendingReferences);
+        var apologyMessage = '分かりませんでした。公式サイトをご確認いただくか、お問い合わせください。';
+        talkAndApologize(apologyMessage, function(){
+          if (fallbackRefs.length) appendReferences(fallbackRefs);
+        });
         history.push({ role:'user', content:value });
         history.push({ role:'assistant', content:'（no answer）' });
       }else{
         startTalkingUI(finalAnswer, function(){
           if (references.length){ appendReferences(references); }
-          else if (pendingReferences.length){ appendReferences(pendingReferences); }
+          else if (fallbackRefs.length){ appendReferences(fallbackRefs); }
         });
         history.push({ role:'user', content:value });
         history.push({ role:'assistant', content:finalAnswer });
