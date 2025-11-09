@@ -12,22 +12,43 @@
     <a class="btn ghost" href="index.html">入口</a>
     <a class="btn ghost" href="faq.html">カテゴリ検索</a>
     <a class="btn ghost" href="search.html">キーワード検索</a>
-    <a class="btn ghost" data-home>ホーム</a>
+    <a class="btn ghost is-active" data-home>ホーム</a>
   </nav>
 </div></header>
 
 <main class="container">
   <div class="heading">AIで検索（β版）</div>
-  <p class="note">Gemini API 無料枠とFAQデータを利用した試験運用です。個人情報や学籍番号などは入力しないでください。</p>
+  <p class="note">Gemini API とFAQ/ナレッジ/許可リンクを使って回答します。個人情報や学籍番号などは入力しないでください。</p>
+
+  <!-- キャラクター＆吹き出し -->
+  <section class="ai-char-wrap">
+    <div class="ai-char">
+      <img id="charImg" alt="AIアシスタント" src="assets/img/char/char_idle.png" width="220" height="220" decoding="async">
+    </div>
+    <div class="ai-balloon" id="charBalloon" aria-live="polite">
+      <div class="ai-balloon-inner" id="charBalloonText">
+        こんにちは！ボクがFAQデータから答えを探すよ。気になることを聞いてね。
+      </div>
+      <div class="ai-indicator" id="charIndicator" hidden>
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="label">検索中…</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- チャット欄 -->
   <div class="chat" id="chatBox">
-    <div class="bubble bot">こんにちは。FAQデータをもとにお答えします。個人情報は入力せず、必要に応じて公式サイトをご確認ください。</div>
+    <div class="bubble bot">こんにちは。FAQデータをもとにお答えします。必要に応じて公式サイトもご確認ください。</div>
   </div>
+
+  <!-- 入力 -->
   <div class="composer" style="margin-top:10px">
     <textarea id="aiInput" placeholder="例：入塾手続きの必要書類について教えてください"></textarea>
     <button id="aiSend" class="btn">送信</button>
   </div>
-  <p class="note" id="aiReminder">無料枠内でのAI連携をテスト中です。回答に時間がかかる場合があります。</p>
-  <p class="note">このページで解決しない場合は<a href="contact.html">CONTACTページ</a>からお問い合わせください。</p>
+
+  <p class="note" id="aiReminder">AI検索はβ版です。環境により少し時間がかかる場合があります。</p>
+  <p class="note">解決しない場合は <a href="contact.html">CONTACTページ</a> からお問い合わせください。</p>
 </main>
 
 <div class="site-footer">© 早稲田アカデミーシンガポール校 / Waseda Academy Singapore.</div>
