@@ -37,9 +37,48 @@
   }
   function hueByName(name) { var s = String(name || ''), h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return (h % 360); }
 
-  function loadFAQ(cfg) {
-    var SHEET_ID = cfg.SHEET_ID;
+  function normalizeFaqRecords(records) {
+    if (!Array.isArray(records)) return [];
+    return records.map(function (row) {
+      if (!row) return null;
+      if (Array.isArray(row)) {
+        return {
+          category: row[0] || '',
+          question: row[1] || '',
+          answer: row[2] || '',
+          public: row.length > 3 ? row[3] : true
+        };
+      }
+      var cat = row.category;
+      if (cat == null) cat = row['カテゴリ'];
+      var question = row.question;
+      if (question == null) question = row['質問'];
+      var answer = row.answer;
+      if (answer == null) answer = row['回答'];
+      var pub;
+      if ('public' in row) pub = row.public;
+      else if ('公開フラグ' in row) pub = row['公開フラグ'];
+      else pub = true;
+      return {
+        category: cat || '',
+        question: question || '',
+        answer: answer || '',
+        public: pub
+      };
+    }).filter(function (row) { return row && isPublic(row.public); });
+  }
+
+  function toErrorMessage(err) {
+    if (!err) return '';
+    if (typeof err === 'string') return err;
+    if (err && typeof err.message === 'string') return err.message;
+    try { return JSON.stringify(err); } catch (_) { return String(err); }
+  }
+
+  function loadFAQFromSheet(cfg) {
+    var SHEET_ID = String(cfg.SHEET_ID || '').trim();
     var SHEET_NAME = cfg.SHEET_NAME || 'FAQ';
+    if (!SHEET_ID) return Promise.reject(new Error('SHEET_IDが設定されていません。'));
     var API_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&headers=1&sheet=' + encodeURIComponent(SHEET_NAME);
     return fetch(API_URL, { cache: 'no-store' })
       .then(function (res) { return res.text(); })
@@ -56,6 +95,54 @@
           return { category: r[map['カテゴリ']] || '', question: r[map['質問']] || '', answer: r[map['回答']] || '', public: r[map['公開フラグ']] };
         }).filter(function (it) { return isPublic(it.public); });
       });
+  }
+
+  function loadFAQFromApi(cfg) {
+    var base = (cfg && (cfg.FAQ_ENDPOINT || cfg.APPS_SCRIPT_ENDPOINT)) || '';
+    base = String(base || '').trim();
+    if (!base) return Promise.reject(new Error('FAQエンドポイントが設定されていません。'));
+    var url = base;
+    if (url.indexOf('?') === -1) url += '?action=faq';
+    else if (!/[?&]action=/.test(url)) url += '&action=faq';
+    return fetch(url, { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('FAQエンドポイントの取得に失敗しました（' + res.status + '）');
+        return res.json();
+      })
+      .then(function (json) {
+        if (json && json.ok === false) throw new Error(json.message || 'FAQエンドポイントがエラーを返しました。');
+        var records = null;
+        if (Array.isArray(json)) records = json;
+        else if (Array.isArray(json.items)) records = json.items;
+        else if (Array.isArray(json.faq)) records = json.faq;
+        else if (Array.isArray(json.records)) records = json.records;
+        else if (Array.isArray(json.data)) records = json.data;
+        if (records == null) throw new Error('FAQデータが空、または認識できませんでした。');
+        return normalizeFaqRecords(records);
+      });
+  }
+
+  function loadFAQ(cfg) {
+    cfg = cfg || {};
+    var hasSheet = !!(cfg.SHEET_ID && String(cfg.SHEET_ID).trim());
+    var hasApi = !!((cfg.FAQ_ENDPOINT && String(cfg.FAQ_ENDPOINT).trim()) || (cfg.APPS_SCRIPT_ENDPOINT && String(cfg.APPS_SCRIPT_ENDPOINT).trim()));
+
+    if (hasSheet) {
+      return loadFAQFromSheet(cfg).catch(function (sheetError) {
+        if (!hasApi) throw sheetError;
+        return loadFAQFromApi(cfg).catch(function (apiError) {
+          var message = toErrorMessage(sheetError);
+          var apiMessage = toErrorMessage(apiError);
+          throw new Error(message + ' / ' + apiMessage);
+        });
+      });
+    }
+
+    if (hasApi) {
+      return loadFAQFromApi(cfg);
+    }
+
+    return Promise.reject(new Error('FAQデータの取得先が設定されていません。'));
   }
 
   function initHomeLinks() {

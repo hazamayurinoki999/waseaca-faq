@@ -90,6 +90,7 @@ Nodeサーバー（server/index.js）
   - `HOME_URL` / `HP_LINK`: サイト共通のホームリンク。ヘッダーや参照リンクの既定値に利用します。
   - `AI_ENDPOINT`: AI検索がPOSTするバックエンドのエンドポイント。
   - `APPS_SCRIPT_ENDPOINT`: `contact.html` から問い合わせ内容を送信する先。Apps Scriptなどで受け取ってください。
+  - `FAQ_ENDPOINT`: （任意）Apps Script等でFAQをJSON形式で提供している場合の取得先。`SHEET_ID` からの直接取得に失敗した際のフォールバックとして利用されます。
 - ページ内での `window.CONFIG` / `window.FAQ_CONFIG` の二重定義によるコンフリクトを避けるため、設定は `assets/config.js` でのみ編集し、他のファイルでは参照専用としてください。
 
 ### APIエンドポイント
