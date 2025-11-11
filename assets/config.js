@@ -4,8 +4,8 @@
  */
 (function(){
   var DEFAULT_APP_CONFIG = {
-    CONTACT_ENDPOINT: "https://script.google.com/macros/s/AKfycbzjE92f97aZTApow1isFN4fWHZy6NmVswMYnyBWAazqJPSeYsQE7EXYTaHGQ_tJpIQ/exec?action=contact",
-    AI_PROXY_ENDPOINT: "https://script.google.com/macros/s/AKfycbzjE92f97aZTApow1isFN4fWHZy6NmVswMYnyBWAazqJPSeYsQE7EXYTaHGQ_tJpIQ/exec?action=ai"
+    CONTACT_ENDPOINT: "https://script.google.com/macros/s/AKfycbzFBAHaK8uZwMs22TbUyRxSAZfE-kyNwLZTLykQp5ixqiAb-CAfG6on-XCtAinJMCMx/exec?action=contact",
+    AI_PROXY_ENDPOINT: "https://script.google.com/macros/s/AKfycbzFBAHaK8uZwMs22TbUyRxSAZfE-kyNwLZTLykQp5ixqiAb-CAfG6on-XCtAinJMCMx/exec?action=ai"
   };
 
   var appConfig = Object.assign({}, DEFAULT_APP_CONFIG, window.APP_CONFIG || {});
