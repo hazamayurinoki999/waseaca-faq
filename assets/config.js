@@ -27,7 +27,7 @@
   var baseEndpoint = resolveBaseEndpoint(appConfig.CONTACT_ENDPOINT);
 
   var base = {
-    SHEET_ID: "1tDXdwHcKAI_785C1tplQsqUUuiwDvxHVA7uuLyK0iGc",
+    SHEET_ID: "1iV-oOV-xYjrEk1TFrt6XaBd69ot1UF0crBKS71qCAZc",
     SHEET_NAME: "FAQ",
     REQUIRED_HEADERS: ["カテゴリ","質問","回答","公開フラグ"],
     HP_LINK: "https://waseaca-singapore.com/",
