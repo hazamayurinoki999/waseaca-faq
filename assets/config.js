@@ -5,7 +5,8 @@
 (function(){
   var DEFAULT_APP_CONFIG = {
     CONTACT_ENDPOINT: "https://script.google.com/macros/s/AKfycbzFBAHaK8uZwMs22TbUyRxSAZfE-kyNwLZTLykQp5ixqiAb-CAfG6on-XCtAinJMCMx/exec?action=contact",
-    AI_PROXY_ENDPOINT: "https://script.google.com/macros/s/AKfycbzFBAHaK8uZwMs22TbUyRxSAZfE-kyNwLZTLykQp5ixqiAb-CAfG6on-XCtAinJMCMx/exec?action=ai"
+    AI_PROXY_ENDPOINT: "https://script.google.com/macros/s/AKfycbzFBAHaK8uZwMs22TbUyRxSAZfE-kyNwLZTLykQp5ixqiAb-CAfG6on-XCtAinJMCMx/exec?action=ai",
+    FAQ_ENDPOINT: ""
   };
 
   var appConfig = Object.assign({}, DEFAULT_APP_CONFIG, window.APP_CONFIG || {});
@@ -26,6 +27,14 @@
 
   var baseEndpoint = resolveBaseEndpoint(appConfig.CONTACT_ENDPOINT);
 
+  var faqEndpoint = (appConfig.FAQ_ENDPOINT || '').trim();
+  if (!faqEndpoint && baseEndpoint) {
+    faqEndpoint = baseEndpoint.replace(/\/?$/, '');
+    if (faqEndpoint) {
+      faqEndpoint += (faqEndpoint.indexOf('?') === -1 ? '?' : '&') + 'action=faq';
+    }
+  }
+
   var base = {
     SHEET_ID: "1iV-oOV-xYjrEk1TFrt6XaBd69ot1UF0crBKS71qCAZc",
     SHEET_NAME: "FAQ",
@@ -33,7 +42,8 @@
     HP_LINK: "https://waseaca-singapore.com/",
     HOME_URL: "https://waseaca-singapore.com/",
     AI_ENDPOINT: appConfig.AI_PROXY_ENDPOINT || "/api/chat",
-    APPS_SCRIPT_ENDPOINT: baseEndpoint
+    APPS_SCRIPT_ENDPOINT: baseEndpoint,
+    FAQ_ENDPOINT: faqEndpoint
   };
 
   // 既存設定があればマージする（後勝ち）。
@@ -53,5 +63,6 @@
     REQUIRED_HEADERS: window.CONFIG.REQUIRED_HEADERS,
     HOME_URL: window.CONFIG.HOME_URL || window.CONFIG.HP_LINK,
     AI_ENDPOINT: window.CONFIG.AI_ENDPOINT,
+    FAQ_ENDPOINT: window.CONFIG.FAQ_ENDPOINT,
   }, window.FAQ_CONFIG || {});
 })();
